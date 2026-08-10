@@ -24,30 +24,7 @@ export default function TenantDetail() {
         const response = await api.get(`/tenants/${id}`);
         setTenant(response.data);
       } catch (err) {
-        // Mock Fallback
-        setTenant({
-          id: id,
-          full_name: "Raj Kumar",
-          email: "raj.kumar@gmail.com",
-          phone: "+91 9876543210",
-          room_bed: "Room 101 - Bed A",
-          status: "ACTIVE",
-          check_in_date: "2026-07-01",
-          security_deposit: 10000,
-          aadhaar: "1234 5678 9012",
-          pan: "ABCDE1234F",
-          emergency_contact: {
-            name: "Jane Doe",
-            phone: "+91 9988776655",
-            relationship: "Spouse"
-          },
-          documents: [
-            { name: "Aadhaar Card", path: "#" },
-            { name: "PAN Card", path: "#" },
-            { name: "Photo ID", path: "#" },
-            { name: "Lease Agreement", path: "#" }
-          ]
-        });
+        console.error("Failed to load tenant details:", err);
       }
     };
     fetchTenant();

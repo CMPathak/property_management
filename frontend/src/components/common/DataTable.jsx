@@ -156,7 +156,7 @@ export default function DataTable({
                 </TableCell>
               ))}
               {actions.length > 0 && (
-                <TableCell align="center" sx={{ fontWeight: 700, color: "#475569", fontSize: "0.75rem", textTransform: "uppercase", borderBottom: "2px solid #E2E8F0" }}>
+                <TableCell align="center" sx={{ fontWeight: 700, color: "#475569", fontSize: "0.75rem", textTransform: "uppercase", borderRight: "1px solid #E2E8F0", borderBottom: "2px solid #E2E8F0" }}>
                   Actions
                 </TableCell>
               )}
@@ -180,7 +180,7 @@ export default function DataTable({
                 ))}
 
                 {actions.length > 0 && (
-                  <TableCell align="center" sx={{ py: 1, whiteSpace: "nowrap", borderBottom: "1px solid #E2E8F0" }}>
+                  <TableCell align="center" sx={{ py: 1, whiteSpace: "nowrap", borderRight: "1px solid #E2E8F0", borderBottom: "1px solid #E2E8F0" }}>
                     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
                       {actions.map((act, actIdx) => {
                         const isDelete = act.label?.toLowerCase().includes("delete");
@@ -222,19 +222,28 @@ export default function DataTable({
       </TableContainer>
 
       {/* Pagination */}
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={processedData.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(e, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(parseInt(e.target.value, 10));
-          setPage(0);
-        }}
-        sx={{ borderTop: "1px solid #E2E8F0" }}
-      />
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, borderTop: "1px solid #F1F5F9" }}>
+        <Typography variant="body2" color="#64748B" fontWeight={500}>
+          Showing {processedData.length > 0 ? page * rowsPerPage + 1 : 0} to {Math.min((page + 1) * rowsPerPage, processedData.length)} of {processedData.length} entries
+        </Typography>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25, 50]}
+          component="div"
+          count={processedData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          labelRowsPerPage=""
+          sx={{ 
+            ".MuiTablePagination-toolbar": { minHeight: "auto", p: 0 },
+            ".MuiTablePagination-actions": { ml: 1 }
+          }}
+        />
+      </Box>
     </Card>
   );
 }

@@ -12,21 +12,26 @@ import {
   Typography,
   Paper,
   Divider,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
-import { Business as BusinessIcon, Google as GoogleIcon, Apple as AppleIcon } from "@mui/icons-material";
+import { Business as BusinessIcon, Google as GoogleIcon, Apple as AppleIcon, Visibility, VisibilityOff } from "@mui/icons-material";
 import { setCredentials } from "../redux/authSlice";
 import api from "../services/api";
-
+import logoImg from "../assets/logo/accomax.png";
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: "onChange",
+  });
 
   const onSubmit = async (data) => {
     try {
@@ -94,24 +99,8 @@ export default function Login() {
       >
         <Box sx={{ width: "100%", maxWidth: 420, mx: "auto" }}>
           {/* Logo */}
-          <Box sx={{ display: "flex", alignItems: "center", mb: 4, gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 42,
-                height: 42,
-                borderRadius: "12px",
-                bgcolor: "#2563EB",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 14px rgba(37,99,235,0.4)",
-              }}
-            >
-              <BusinessIcon sx={{ color: "#FFFFFF", fontSize: 24 }} />
-            </Box>
-            <Typography variant="h5" fontWeight={800} color="#0F172A" tracking="-0.02em">
-              ACCOUMAXX
-            </Typography>
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
+            <img src={logoImg} alt="Accoumaxx Logo" style={{ height: 48 }} />
           </Box>
 
           <Typography variant="h4" fontWeight={800} sx={{ mb: 1, tracking: "-0.02em", color: "#0F172A" }}>
@@ -131,7 +120,13 @@ export default function Login() {
               name="email"
               autoComplete="email"
               autoFocus
-              {...register("email", { required: "Email is required" })}
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  message: "Please enter a valid email address",
+                },
+              })}
               error={!!errors.email}
               helperText={errors.email?.message}
               sx={{ mb: 2 }}
@@ -142,12 +137,40 @@ export default function Login() {
               fullWidth
               name="password"
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               autoComplete="current-password"
               {...register("password", { required: "Password is required" })}
               error={!!errors.password}
               helperText={errors.password?.message}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
 
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 1.5, mb: 3 }}>

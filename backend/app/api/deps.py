@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.redis import redis_client
 from app.core.security import decode_token
-from app.database.session import get_db
-from app.crud.crud_user import user_crud
-from app.models.users import User
+from app.core.database import get_db
+from app.modules.users.repository import user_crud
+from app.modules.users.model import User
 
 # Using OAuth2PasswordBearer for token extraction
 reusable_oauth2 = OAuth2PasswordBearer(
@@ -75,7 +75,7 @@ async def get_current_active_user(
 async def get_current_verified_user(
     current_user: User = Depends(get_current_active_user),
 ) -> User:
-    if not current_user.is_verified:
+    if not current_user.email_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User email/phone is not verified"

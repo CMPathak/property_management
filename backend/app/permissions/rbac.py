@@ -1,7 +1,7 @@
 import enum
 from fastapi import Depends, HTTPException, status
-from app.models.users import User, UserRole
-from app.api.deps import get_current_user
+from app.modules.users.model import User, UserRole
+from app.core.dependencies import get_current_user
 
 class PermissionAction(str, enum.Enum):
     CREATE = "create"
@@ -16,35 +16,11 @@ class PermissionAction(str, enum.Enum):
 
 # RBAC Matrix mapping UserRole to allowable permission tokens
 # Format: "resource:action" or "*" for all
+# RBAC Matrix mapping UserRole to allowable permission tokens
+# Format: "resource:action" or "*" for all
 ROLE_PERMISSIONS: dict[UserRole, list[str]] = {
     UserRole.SUPER_ADMIN: ["*"],
     UserRole.OWNER: ["*"],
-    UserRole.MANAGER: [
-        "property:create", "property:read", "property:update", "property:assign",
-        "floor:create", "floor:read", "floor:update",
-        "room:create", "room:read", "room:update",
-        "bed:create", "bed:read", "bed:update",
-        "tenant:create", "tenant:read", "tenant:update", "tenant:assign",
-        "agreement:create", "agreement:read", "agreement:update",
-        "rent:create", "rent:read", "rent:update", "rent:approve",
-        "invoice:create", "invoice:read", "invoice:update", "invoice:print", "invoice:export",
-        "payment:create", "payment:read", "payment:update",
-        "complaint:create", "complaint:read", "complaint:update", "complaint:assign", "complaint:approve",
-        "staff:read", "staff:update", "staff:assign",
-        "staff_attendance:read", "staff_attendance:create",
-        "expense:create", "expense:read", "expense:update", "expense:export",
-        "report:read", "report:export", "report:print"
-    ],
-    UserRole.ACCOUNTANT: [
-        "property:read", "floor:read", "room:read", "bed:read", "tenant:read",
-        "agreement:read",
-        "rent:read", "rent:update", "rent:approve",
-        "invoice:create", "invoice:read", "invoice:update", "invoice:print", "invoice:export",
-        "payment:create", "payment:read", "payment:update", "payment:approve",
-        "staff:read", "staff_salary:create", "staff_salary:read", "staff_salary:update", "staff_salary:approve",
-        "expense:create", "expense:read", "expense:update", "expense:export",
-        "report:read", "report:export", "report:print"
-    ],
     UserRole.STAFF: [
         "property:read", "floor:read", "room:read", "bed:read", "tenant:read",
         "agreement:read",
@@ -61,6 +37,36 @@ ROLE_PERMISSIONS: dict[UserRole, list[str]] = {
     ]
 }
 
+# Designation-specific permissions for STAFF role
+STAFF_DESIGNATION_PERMISSIONS: dict[str, list[str]] = {
+    "Property Manager": [
+        "property:create", "property:read", "property:update", "property:assign",
+        "floor:create", "floor:read", "floor:update",
+        "room:create", "room:read", "room:update",
+        "bed:create", "bed:read", "bed:update",
+        "tenant:create", "tenant:read", "tenant:update", "tenant:assign",
+        "agreement:create", "agreement:read", "agreement:update",
+        "rent:create", "rent:read", "rent:update", "rent:approve",
+        "invoice:create", "invoice:read", "invoice:update", "invoice:print", "invoice:export",
+        "payment:create", "payment:read", "payment:update",
+        "complaint:create", "complaint:read", "complaint:update", "complaint:assign", "complaint:approve",
+        "staff:read", "staff:update", "staff:assign",
+        "staff_attendance:read", "staff_attendance:create",
+        "expense:create", "expense:read", "expense:update", "expense:export",
+        "report:read", "report:export", "report:print"
+    ],
+    "Accountant": [
+        "property:read", "floor:read", "room:read", "bed:read", "tenant:read",
+        "agreement:read",
+        "rent:read", "rent:update", "rent:approve",
+        "invoice:create", "invoice:read", "invoice:update", "invoice:print", "invoice:export",
+        "payment:create", "payment:read", "payment:update", "payment:approve",
+        "staff:read", "staff_salary:create", "staff_salary:read", "staff_salary:update", "staff_salary:approve",
+        "expense:create", "expense:read", "expense:update", "expense:export",
+        "report:read", "report:export", "report:print"
+    ]
+}
+
 
 class PermissionChecker:
     def __init__(self, resource: str, action: PermissionAction):
@@ -69,7 +75,12 @@ class PermissionChecker:
 
     def __call__(self, current_user: User = Depends(get_current_user)) -> User:
         user_role = current_user.role
-        allowed_permissions = ROLE_PERMISSIONS.get(user_role, [])
+        allowed_permissions = list(ROLE_PERMISSIONS.get(user_role, []))
+
+        # Dynamically append designation-specific permissions for STAFF
+        if user_role == UserRole.STAFF and current_user.designation:
+            designation_perms = STAFF_DESIGNATION_PERMISSIONS.get(current_user.designation, [])
+            allowed_permissions.extend(designation_perms)
 
         # Super admin and owner have wildcard permissions
         if "*" in allowed_permissions:

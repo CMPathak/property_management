@@ -117,6 +117,7 @@ async def build_invoice_pdf(
         tenant_name=tenant_name,
         room_number=room_number,
         rent_amount=float(invoice.rent_amount),
+        security_deposit=float(invoice.security_deposit),
         utility_charges=float(invoice.utility_charges),
         late_fees=float(invoice.late_fees),
         discount=float(invoice.discount),

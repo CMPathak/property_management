@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
@@ -13,18 +13,24 @@ import {
   Typography,
   Paper,
   Divider,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
-import { Business as BusinessIcon, Google as GoogleIcon, Apple as AppleIcon } from "@mui/icons-material";
+import { Business as BusinessIcon, Google as GoogleIcon, Apple as AppleIcon, Visibility, VisibilityOff } from "@mui/icons-material";
 import api from "../services/api";
-
+import { toast } from "react-toastify";
+import logoImg from "../assets/logo/accomax.png";
 export default function Signup() {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    mode: "onChange",
+  });
 
   const onSubmit = async (data) => {
     try {
@@ -41,11 +47,25 @@ export default function Signup() {
       const response = await api.post("/auth/signup", payload);
 
       if (response.status === 201 || response.status === 200) {
+        toast.success("Account created successfully! Please log in.");
         navigate("/login");
       }
     } catch (err) {
       console.error("Signup failed:", err);
-      navigate("/login");
+      let message = "Signup failed. Please try again.";
+      if (err.response?.data?.detail) {
+        const detail = err.response.data.detail;
+        if (typeof detail === "string") {
+          message = detail;
+        } else if (Array.isArray(detail)) {
+          message = detail.map((d) => d.msg).join(", ");
+        } else if (typeof detail === "object" && detail.message) {
+          message = detail.message;
+        }
+      } else if (err.message) {
+        message = err.message;
+      }
+      toast.error(message);
     }
   };
 
@@ -67,24 +87,8 @@ export default function Signup() {
       >
         <Box sx={{ width: "100%", maxWidth: 420, mx: "auto" }}>
           {/* Logo */}
-          <Box sx={{ display: "flex", alignItems: "center", mb: 3, gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 42,
-                height: 42,
-                borderRadius: "12px",
-                bgcolor: "#2563EB",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 14px rgba(37,99,235,0.4)",
-              }}
-            >
-              <BusinessIcon sx={{ color: "#FFFFFF", fontSize: 24 }} />
-            </Box>
-            <Typography variant="h5" fontWeight={800} color="#0F172A" tracking="-0.02em">
-              ACCOUMAXX
-            </Typography>
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+            <img src={logoImg} alt="Accoumaxx Logo" style={{ height: 48 }} />
           </Box>
 
           <Typography variant="h4" fontWeight={800} sx={{ mb: 1, tracking: "-0.02em", color: "#0F172A" }}>
@@ -116,7 +120,13 @@ export default function Signup() {
               label="Email Address"
               name="email"
               autoComplete="email"
-              {...register("email", { required: "Email is required" })}
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                  message: "Please enter a valid email address",
+                },
+              })}
               error={!!errors.email}
               helperText={errors.email?.message}
               sx={{ mb: 1.5 }}
@@ -128,7 +138,13 @@ export default function Signup() {
               id="phone"
               label="Phone Number"
               name="phone"
-              {...register("phone", { required: "Phone number is required" })}
+              {...register("phone", {
+                required: "Phone number is required",
+                pattern: {
+                  value: /^(?:\+91|91|0)?[6-9]\d{9}$/,
+                  message: "Please enter a valid 10-digit mobile number",
+                },
+              })}
               error={!!errors.phone}
               helperText={errors.phone?.message}
               sx={{ mb: 1.5 }}
@@ -139,12 +155,40 @@ export default function Signup() {
               fullWidth
               name="password"
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               {...register("password", { required: "Password is required", minLength: { value: 6, message: "Password must be at least 6 characters" } })}
               error={!!errors.password}
               helperText={errors.password?.message}
               sx={{ mb: 1.5 }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
             <Button
               type="submit"

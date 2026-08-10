@@ -21,10 +21,10 @@ export default function StatCard({
   const isVeryLong = valString.length > 20;
 
   const dynamicFontSize = isVeryLong
-    ? { xs: "0.95rem", sm: "1.05rem", md: "1.15rem" }
+    ? { xs: "0.85rem", sm: "0.95rem", md: "1.05rem" }
     : isLong
-    ? { xs: "1.1rem", sm: "1.2rem", md: "1.3rem" }
-    : { xs: "1.25rem", sm: "1.4rem", md: "1.55rem" };
+    ? { xs: "0.95rem", sm: "1.05rem", md: "1.15rem" }
+    : { xs: "1.1rem", sm: "1.2rem", md: "1.3rem" };
 
   return (
     <Card
@@ -37,7 +37,7 @@ export default function StatCard({
         overflow: "hidden",
       }}
     >
-      <CardContent sx={{ p: { xs: 2, sm: 2.25 }, "&:last-child": { pb: { xs: 2, sm: 2.25 } } }}>
+      <CardContent sx={{ p: { xs: 1.25, sm: 1.5 }, "&:last-child": { pb: { xs: 1.25, sm: 1.5 } } }}>
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.25 }}>
           <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ fontSize: { xs: "0.75rem", sm: "0.825rem" } }}>
             {title}
@@ -46,13 +46,13 @@ export default function StatCard({
             sx={{
               bgcolor: iconBg,
               color: iconColor,
-              width: { xs: 36, sm: 40 },
-              height: { xs: 36, sm: 40 },
+              width: { xs: 28, sm: 32 },
+              height: { xs: 28, sm: 32 },
               borderRadius: "10px",
               boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
             }}
           >
-            {IconComponent && <IconComponent sx={{ fontSize: { xs: 18, sm: 20 } }} />}
+            {IconComponent && <IconComponent sx={{ fontSize: { xs: 16, sm: 18 } }} />}
           </Avatar>
         </Box>
 

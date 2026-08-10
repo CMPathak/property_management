@@ -19,11 +19,8 @@ import api from "../services/api";
 import DataTable from "../components/common/DataTable";
 
 export default function Expenses() {
-  const [expenses, setExpenses] = useState([
-    { id: 1, title: "Electricity Bill - Main Property", category: "UTILITY", amount: 14200, date: "2026-07-20", payment_method: "ONLINE", status: "PAID" },
-    { id: 2, title: "Water Supply Bill", category: "UTILITY", amount: 3500, date: "2026-07-18", payment_method: "BANK_TRANSFER", status: "PAID" },
-    { id: 3, title: "Plumbing Parts & Repair", category: "MAINTENANCE", amount: 2800, date: "2026-07-15", payment_method: "CASH", status: "PAID" },
-  ]);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [title, setTitle] = useState("");
@@ -32,13 +29,17 @@ export default function Expenses() {
   const [payMethod, setPayMethod] = useState("ONLINE");
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const res = await api.get("/expenses/");
-      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+      if (res.data && Array.isArray(res.data)) {
         setExpenses(res.data);
       }
     } catch (e) {
-      console.log("Using initial expense records.");
+      console.error("Failed to fetch expenses:", e);
+      setExpenses([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,23 +48,34 @@ export default function Expenses() {
   }, []);
 
   const handleAddExpense = async () => {
-    if (!title || !amount) {
-      alert("Please provide title and amount.");
+    if (!title || !amount || parseFloat(amount) <= 0) {
+      alert("Please provide valid description and amount.");
       return;
     }
-    const newExp = {
-      id: Date.now(),
-      title,
-      category,
-      amount: parseFloat(amount) || 0,
-      date: new Date().toISOString().split("T")[0],
-      payment_method: payMethod,
-      status: "PAID",
-    };
-    setExpenses([newExp, ...expenses]);
-    setOpenAddDialog(false);
-    setTitle("");
-    setAmount("");
+    try {
+      const payload = {
+        title: title,
+        description: title,
+        category: category,
+        amount: parseFloat(amount),
+        expense_date: new Date().toISOString().split("T")[0],
+        payment_mode: payMethod,
+      };
+      await api.post("/expenses/", payload);
+      setOpenAddDialog(false);
+      setTitle("");
+      setAmount("");
+      fetchData();
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        alert(detail.map((d) => `${d.loc?.slice(1).join(".") || d.loc?.join(".")}: ${d.msg}`).join("\n"));
+      } else if (typeof detail === "object" && detail !== null) {
+        alert(JSON.stringify(detail));
+      } else {
+        alert(detail || err.message || "Failed to record expense.");
+      }
+    }
   };
 
   const columns = [
@@ -92,12 +104,12 @@ export default function Expenses() {
     {
       id: "date",
       label: "Expense Date",
-      render: (e) => e.date,
+      render: (e) => e.expense_date || e.date || "—",
     },
     {
       id: "payment_method",
       label: "Payment Mode",
-      render: (e) => e.payment_method,
+      render: (e) => e.payment_mode || e.payment_method || "—",
     },
     {
       id: "status",

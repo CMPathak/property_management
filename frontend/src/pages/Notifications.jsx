@@ -1,30 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   Typography,
   Box,
   Card,
   Chip,
   Avatar,
-  IconButton,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from "@mui/material";
 import {
   Notifications as BellIcon,
-  CheckCircle as DoneIcon,
-  ReportProblem as AlertIcon,
-  CurrencyRupee as RentIcon,
+  Add as AddIcon,
 } from "@mui/icons-material";
+import api from "../services/api";
 
 export default function Notifications() {
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: "Rent Due Reminder Sent", message: "Automated rent invoice notification dispatched to Room 101 tenants.", time: "10 mins ago", type: "INFO", read: false },
-    { id: 2, title: "New Complaint Logged", message: "Plumbing issue logged by Rajesh for Room 102.", time: "1 hour ago", type: "WARNING", read: false },
-    { id: 3, title: "Payment Received", message: "₹6,000 rent payment verified for Room 201.", time: "3 hours ago", type: "SUCCESS", read: true },
-    { id: 4, title: "Bed Allocation Confirmed", message: "Ankush Mishra assigned to Room 101 - Bed 12.", time: "Yesterday", type: "SUCCESS", read: true },
-  ]);
+  const user = useSelector((state) => state.auth.user);
+  const isManagement = user?.role === "SUPER_ADMIN" || user?.role === "OWNER" || (user?.role === "STAFF" && user?.designation === "Property Manager");
+
+  const [notifications, setNotifications] = useState([]);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newBody, setNewBody] = useState("");
+
+  const [readIds, setReadIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem("read_notifications");
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get("/notifications/");
+      setNotifications(res.data || []);
+    } catch (e) {
+      console.error("Failed to load notifications:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    const allIds = notifications.map((n) => n.id);
+    setReadIds(allIds);
+    localStorage.setItem("read_notifications", JSON.stringify(allIds));
+  };
+
+  const handleAddAnnouncement = async () => {
+    if (!newTitle || !newBody) {
+      alert("Please fill in both title and message.");
+      return;
+    }
+    try {
+      await api.post("/notifications/", {
+        title: newTitle,
+        body: newBody,
+        type: "PUSH",
+      });
+      setNewTitle("");
+      setNewBody("");
+      setOpenAddDialog(false);
+      fetchNotifications();
+    } catch (e) {
+      alert("Failed to publish announcement.");
+    }
   };
 
   return (
@@ -35,25 +84,35 @@ export default function Notifications() {
             System Notifications & Alerts
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Stay updated with rent reminders, tenant check-ins, maintenance complaints, and payment confirmations.
+            Stay updated with announcements, rent reminders, check-ins, and payment confirmations.
           </Typography>
         </Box>
-        <Button variant="outlined" color="primary" onClick={handleMarkAllRead}>
-          Mark All as Read
-        </Button>
+        <Box sx={{ display: "flex", gap: 1.5 }}>
+          {isManagement && (
+            <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => setOpenAddDialog(true)}>
+              New Announcement
+            </Button>
+          )}
+          <Button variant="outlined" color="primary" onClick={handleMarkAllRead}>
+            Mark All as Read
+          </Button>
+        </Box>
       </Box>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {notifications.map((n) => {
-          let icon = <BellIcon sx={{ color: "#2563EB" }} />;
-          let bg = "rgba(37, 99, 235, 0.1)";
-          if (n.type === "SUCCESS") {
-            icon = <RentIcon sx={{ color: "#16A34A" }} />;
-            bg = "rgba(34, 197, 94, 0.1)";
-          } else if (n.type === "WARNING") {
-            icon = <AlertIcon sx={{ color: "#DC2626" }} />;
-            bg = "rgba(239, 68, 68, 0.1)";
-          }
+          const isRead = readIds.includes(n.id);
+          const icon = <BellIcon sx={{ color: "#2563EB" }} />;
+          const bg = "rgba(37, 99, 235, 0.1)";
+
+          const displayTime = n.created_at
+            ? new Date(n.created_at).toLocaleString("en-IN", {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Recent";
 
           return (
             <Card
@@ -63,9 +122,9 @@ export default function Notifications() {
                 borderRadius: "14px",
                 display: "flex",
                 alignItems: "center",
-                justify: "space-between",
-                bgcolor: n.read ? "background.paper" : "rgba(37, 99, 235, 0.03)",
-                border: n.read ? "1px solid #E2E8F0" : "1px solid #2563EB",
+                justifyContent: "space-between",
+                bgcolor: isRead ? "background.paper" : "rgba(37, 99, 235, 0.03)",
+                border: isRead ? "1px solid #E2E8F0" : "1px solid #2563EB",
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -75,20 +134,63 @@ export default function Notifications() {
                     {n.title}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {n.message}
+                    {n.body}
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ textAlign: "right" }}>
+              <Box sx={{ textAlign: "right", minWidth: 120 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
-                  {n.time}
+                  {displayTime}
                 </Typography>
-                {!n.read && <Chip label="NEW" size="small" color="primary" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 800 }} />}
+                {!isRead && <Chip label="NEW" size="small" color="primary" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 800 }} />}
               </Box>
             </Card>
           );
         })}
+
+        {notifications.length === 0 && (
+          <Card sx={{ p: 4, textAlign: "center", border: "1px dashed #CBD5E1" }}>
+            <Typography variant="body2" color="text.secondary">
+              No notifications or announcements found.
+            </Typography>
+          </Card>
+        )}
       </Box>
+
+      {/* Add Dialog */}
+      <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} fullWidth maxWidth="sm">
+        <DialogTitle sx={{ fontWeight: 800 }}>Create New Announcement</DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Announcement Title"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            sx={{ mb: 2, mt: 1 }}
+          />
+          <TextField
+            margin="dense"
+            label="Announcement Body"
+            type="text"
+            fullWidth
+            multiline
+            rows={4}
+            variant="outlined"
+            value={newBody}
+            onChange={(e) => setNewBody(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setOpenAddDialog(false)}>Cancel</Button>
+          <Button onClick={handleAddAnnouncement} variant="contained" color="primary">
+            Publish Announcement
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

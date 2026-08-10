@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   Grid,
   Card,
@@ -37,13 +38,44 @@ import {
   ReportProblem as ComplaintIcon,
   Notifications as NoticeIcon,
   ReceiptLong as ReceiptIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import api from "../services/api";
 import StatCard from "../components/common/StatCard";
 import DataTable from "../components/common/DataTable";
 import WelcomeBanner from "../components/common/WelcomeBanner";
+import PaymentDialog from "../components/billing/PaymentDialog";
 
-export default function Dashboard() {
+class DashboardErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Dashboard Error:", error, errorInfo);
+    this.setState({ errorInfo });
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Box sx={{ p: 4, bgcolor: "#FEE2E2", color: "#991B1B", borderRadius: 2, m: 3 }}>
+          <Typography variant="h5" fontWeight="bold">Dashboard crashed!</Typography>
+          <Typography sx={{ mt: 2 }}>{this.state.error?.toString()}</Typography>
+          <pre style={{ overflow: "auto", fontSize: "12px", marginTop: "10px" }}>
+            {this.state.errorInfo?.componentStack}
+          </pre>
+        </Box>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function DashboardContent() {
+  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user) || {
     full_name: "Rajesh Sharma",
     role: "OWNER",
@@ -93,6 +125,9 @@ export default function Dashboard() {
 
   const [tenantRentHistory, setTenantRentHistory] = useState([]);
   const [tenantNotices, setTenantNotices] = useState([]);
+  
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [currentInvoice, setCurrentInvoice] = useState(null);
 
   const fetchDashboardData = async () => {
     try {
@@ -140,6 +175,16 @@ export default function Dashboard() {
           }
         } catch (e) {
           console.error("Failed to fetch tenant complaints:", e);
+        }
+        
+        try {
+          const invRes = await api.get("/rent/current-invoice");
+          if (invRes.data) {
+             setCurrentInvoice(invRes.data);
+          }
+        } catch (e) {
+          // ignore if 404
+          setCurrentInvoice(null);
         }
 
         // Calculate dynamic values for tenant
@@ -238,12 +283,13 @@ export default function Dashboard() {
       } else {
         // Dynamic Owner Data Fetching
         const propertiesRes = await api.get("/properties/");
-        const propertiesData = propertiesRes.data || [];
+        const propertiesData = Array.isArray(propertiesRes.data) ? propertiesRes.data : [];
         setPropertiesCount(propertiesData.length);
 
         let rooms = 0;
         let occupied = 0;
         let vacant = 0;
+        let expectedRevenue = 0;
 
         propertiesData.forEach((p) => {
           if (p.floors) {
@@ -252,8 +298,12 @@ export default function Dashboard() {
                 rooms += f.rooms.length;
                 f.rooms.forEach((r) => {
                   if (r.beds) {
+                    const bedRent = (r.monthly_rent || r.base_rent || 0) / (r.beds.length || 1);
                     r.beds.forEach((b) => {
-                      if (b.status === "OCCUPIED") occupied += 1;
+                      if (b.status === "OCCUPIED") {
+                        occupied += 1;
+                        expectedRevenue += bedRent;
+                      }
                       else if (b.status === "VACANT") vacant += 1;
                     });
                   }
@@ -275,11 +325,11 @@ export default function Dashboard() {
         ]);
 
         const tenantsRes = await api.get("/tenants/");
-        const tenantsData = tenantsRes.data || [];
+        const tenantsData = Array.isArray(tenantsRes.data) ? tenantsRes.data : [];
         setTenantsCount(tenantsData.length);
 
         const complaintsRes = await api.get("/complaints/");
-        const complaintsData = complaintsRes.data || [];
+        const complaintsData = Array.isArray(complaintsRes.data) ? complaintsRes.data : [];
         const formattedComplaints = complaintsData.slice(-4).reverse().map((c) => {
           let chipColor = "error";
           if (c.status === "RESOLVED" || c.status === "CLOSED") chipColor = "success";
@@ -287,8 +337,8 @@ export default function Dashboard() {
 
           return {
             id: c.id,
-            title: c.title,
-            tenant: c.tenant_name || "Tenant",
+            title: c.subject || c.title || "Complaint",
+            tenant: c.tenant_name || (c.tenant_profile?.user?.full_name) || "Tenant",
             status: c.status || "OPEN",
             color: chipColor,
             date: c.created_at ? new Date(c.created_at).toLocaleDateString() : "Recent",
@@ -297,15 +347,20 @@ export default function Dashboard() {
         setRecentComplaintsList(formattedComplaints);
 
         const invoicesRes = await api.get("/rent/invoices");
-        const invoicesData = invoicesRes.data || [];
+        const invoicesData = Array.isArray(invoicesRes.data) ? invoicesRes.data : [];
 
         let collected = 0;
         let pending = 0;
-        const monthWiseRevenue = { Jan: 0, Feb: 0, Mar: 0, Apr: 0, May: 0, Jun: 0, Jul: 0 };
+        const currentDate = new Date();
+        const monthWiseRevenue = {};
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          monthWiseRevenue[d.toLocaleString("en-US", { month: "short" })] = 0;
+        }
 
         invoicesData.forEach((inv) => {
-          const amount = inv.amount || inv.total_amount || 0;
-          const paid = inv.amount_paid || 0;
+          const amount = inv.total_amount || inv.amount || 0;
+          const paid = inv.paid_amount || inv.amount_paid || 0;
           collected += paid;
           pending += amount - paid;
 
@@ -318,8 +373,8 @@ export default function Dashboard() {
           }
         });
 
-        setTotalRevenue(collected);
-        setTotalPending(pending);
+        setTotalRevenue(expectedRevenue > 0 ? expectedRevenue : collected);
+        setTotalPending(expectedRevenue > 0 ? (expectedRevenue - collected) : pending);
 
         const updatedTrend = Object.keys(monthWiseRevenue).map((month) => ({
           name: month,
@@ -327,18 +382,26 @@ export default function Dashboard() {
         }));
         setRevenueTrend(updatedTrend);
 
-        const formattedPayments = invoicesData.slice(-5).reverse().map((inv) => ({
-          id: inv.id,
-          tenant: inv.tenant_name || "Resident",
-          room: inv.room_number || "Room",
-          amount: `₹${(inv.amount_paid || inv.amount || inv.total_amount || 0).toLocaleString("en-IN")}`,
-          date: inv.created_at ? new Date(inv.created_at).toLocaleDateString() : "Today",
-          status: inv.status || "COMPLETED",
-        }));
-        setRecentPaymentsList(formattedPayments);
+        // Fetch Pending Payments for approval
+        try {
+          const paymentsRes = await api.get("/rent/payments?status=PENDING_VERIFICATION");
+          const formattedPayments = (paymentsRes.data || []).map((pay) => ({
+            id: pay.id,
+            tenant: pay.tenant_name || pay.tenant_id || "Tenant",
+            room: pay.room_number || "N/A",
+            amount: `₹${(pay.amount || 0).toLocaleString("en-IN")}`,
+            date: pay.payment_date ? new Date(pay.payment_date).toLocaleDateString() : "Today",
+            status: pay.status,
+            proof: pay.payment_proof,
+            remarks: pay.remarks
+          }));
+          setRecentPaymentsList(formattedPayments);
+        } catch(e) {
+          console.error("Failed to fetch pending payments", e);
+        }
 
         const pendingRes = await api.get("/rent/pending");
-        const pendingData = pendingRes.data || [];
+        const pendingData = Array.isArray(pendingRes.data) ? pendingRes.data : [];
         const formattedPending = pendingData.slice(0, 5).map((pInv) => {
           let statusText = "Pending";
           if (pInv.due_date) {
@@ -382,12 +445,12 @@ export default function Dashboard() {
         actions={
           isTenant
             ? [
-                { label: "Pay Rent", icon: <MoneyIcon />, onClick: () => {} },
-                { label: "New Complaint", variant: "outlined", icon: <AddIcon />, onClick: () => {} },
+                { label: "Pay Rent", icon: <MoneyIcon />, onClick: () => navigate("/rent") },
+                { label: "New Complaint", variant: "outlined", icon: <AddIcon />, onClick: () => navigate("/complaints") },
               ]
             : [
-                { label: "Collect Rent", icon: <MoneyIcon />, onClick: () => {} },
-                { label: "Add Tenant", variant: "outlined", icon: <AddIcon />, onClick: () => {} },
+                { label: "Collect Rent", icon: <MoneyIcon />, onClick: () => navigate("/rent") },
+                { label: "Add Tenant", variant: "outlined", icon: <AddIcon />, onClick: () => navigate("/tenants") },
               ]
         }
       />
@@ -415,13 +478,25 @@ export default function Dashboard() {
               Quick Actions
             </Typography>
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-              <Button variant="contained" color="primary" startIcon={<MoneyIcon />} sx={{ width: { xs: "100%", sm: "auto" } }}>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                startIcon={<MoneyIcon />} 
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+                onClick={() => navigate("/rent")}
+              >
                 Pay Current Rent
               </Button>
-              <Button variant="outlined" startIcon={<DownloadIcon />} sx={{ width: { xs: "100%", sm: "auto" } }}>
+              <Button variant="outlined" startIcon={<DownloadIcon />} sx={{ width: { xs: "100%", sm: "auto" } }} onClick={() => {
+                if (currentInvoice) {
+                  window.open(`http://localhost:8000/api/v1/rent/invoices/${currentInvoice.id}/download`, '_blank');
+                } else {
+                  alert("No invoice to download.");
+                }
+              }}>
                 Download Latest Receipt
               </Button>
-              <Button variant="outlined" startIcon={<ComplaintIcon />} sx={{ width: { xs: "100%", sm: "auto" } }}>
+              <Button variant="outlined" startIcon={<ComplaintIcon />} sx={{ width: { xs: "100%", sm: "auto" } }} onClick={() => navigate("/complaints")}>
                 Raise Maintenance Ticket
               </Button>
             </Box>
@@ -444,7 +519,9 @@ export default function Dashboard() {
               ]}
               data={tenantRentHistory}
               actions={[
-                { label: "Download Receipt", icon: <DownloadIcon fontSize="small" />, onClick: () => {} },
+                { label: "Download Receipt", icon: <DownloadIcon fontSize="small" />, onClick: (row) => {
+                   window.open(`http://localhost:8000/api/v1/rent/invoices/${row.id}/download`, '_blank');
+                } },
               ]}
             />
 
@@ -481,7 +558,7 @@ export default function Dashboard() {
           >
             <StatCard title="Total Properties" value={propertiesCount} subtitle="Active Sites" icon={BusinessIcon} trend="Synced" trendType="up" iconBg="rgba(37, 99, 235, 0.1)" iconColor="#2563EB" />
             <StatCard title="Total Rooms / Beds" value={`${roomsCount} / ${bedsCount}`} subtitle={`Occupancy: ${occupiedPercent}%`} icon={BedIcon} trend={`${occupiedPercent}%`} trendType="up" iconBg="rgba(34, 197, 94, 0.1)" iconColor="#22C55E" />
-            <StatCard title="Monthly Revenue" value={`₹${totalRevenue.toLocaleString("en-IN")}`} subtitle="Collected Payments" icon={MoneyIcon} trend="Paid" trendType="up" iconBg="rgba(245, 158, 11, 0.1)" iconColor="#F59E0B" />
+            <StatCard title="Monthly Revenue" value={`₹${totalRevenue.toLocaleString("en-IN")}`} subtitle="Expected Rent" icon={MoneyIcon} trend="Potential" trendType="up" iconBg="rgba(245, 158, 11, 0.1)" iconColor="#F59E0B" />
             <StatCard title="Pending Rent" value={`₹${totalPending.toLocaleString("en-IN")}`} subtitle="Outstanding Dues" icon={PendingIcon} trend="Due" trendType="down" iconBg="rgba(239, 68, 68, 0.1)" iconColor="#EF4444" />
           </Box>
 
@@ -561,28 +638,44 @@ export default function Dashboard() {
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "2fr 1fr" }, gap: 3 }}>
             {/* Recent Payments Table */}
             <DataTable
-              title="Recent Payments"
+              title="Pending Payments (Needs Approval)"
               searchPlaceholder="Search payments..."
               columns={[
-                { id: "tenant", label: "Tenant" },
-                { id: "room", label: "Room No" },
+                { id: "tenant", label: "Tenant ID" },
                 { id: "amount", label: "Amount Paid" },
                 { id: "date", label: "Date" },
                 {
                   id: "status",
                   label: "Status",
-                  render: (row) => <Chip label={row.status} size="small" color="success" sx={{ borderRadius: "6px" }} />,
+                  render: (row) => <Chip label={row.status} size="small" color="warning" sx={{ borderRadius: "6px" }} />,
                 },
               ]}
               data={recentPaymentsList}
               actions={[
-                { label: "View Receipt", icon: <ReceiptIcon fontSize="small" />, onClick: () => {} },
+                { label: "Approve", icon: <CheckCircleIcon fontSize="small" color="success" />, onClick: async (row) => {
+                  try {
+                    await api.post(`/rent/payments/${row.id}/approve`);
+                    alert("Payment approved successfully!");
+                    fetchDashboardData();
+                  } catch (e) {
+                    alert("Failed to approve payment");
+                  }
+                } },
+                { label: "Reject", icon: <CloseIcon fontSize="small" color="error" />, onClick: async (row) => {
+                  try {
+                    await api.post(`/rent/payments/${row.id}/reject`);
+                    alert("Payment rejected.");
+                    fetchDashboardData();
+                  } catch (e) {
+                    alert("Failed to reject payment");
+                  }
+                } },
               ]}
             />
 
             {/* Recent Complaints List */}
             <Card sx={{ p: 3, borderRadius: "16px" }}>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2, display: "flex", alignItems: "center", justify: "space-between" }}>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 Recent Complaints
                 <Chip label={recentComplaintsList.length} size="small" color="error" />
               </Typography>
@@ -632,6 +725,25 @@ export default function Dashboard() {
           />
         </Box>
       )}
+      {/* End Dashboard Container */}
+      <PaymentDialog 
+        open={isPaymentDialogOpen} 
+        onClose={() => setIsPaymentDialogOpen(false)} 
+        invoice={currentInvoice} 
+        onSuccess={() => {
+          setIsPaymentDialogOpen(false);
+          fetchDashboardData();
+          alert("Payment submitted successfully. Pending owner approval.");
+        }} 
+      />
     </Box>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <DashboardErrorBoundary>
+      <DashboardContent />
+    </DashboardErrorBoundary>
   );
 }

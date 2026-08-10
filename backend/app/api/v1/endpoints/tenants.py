@@ -57,6 +57,14 @@ async def create_tenant_profile(
             existing.status = obj_in.status
         if obj_in.emergency_contact:
             existing.emergency_contact = obj_in.emergency_contact
+        if obj_in.guardian_name is not None:
+            existing.guardian_name = obj_in.guardian_name
+        if obj_in.guardian_phone is not None:
+            existing.guardian_phone = obj_in.guardian_phone
+        if obj_in.guardian_relation is not None:
+            existing.guardian_relation = obj_in.guardian_relation
+        if obj_in.monthly_rent is not None:
+            existing.monthly_rent = obj_in.monthly_rent
 
         if obj_in.bed_id:
             bed_stmt = select(Bed).where(Bed.id == obj_in.bed_id)
@@ -109,7 +117,17 @@ async def create_tenant_profile(
         "status": created.status,
         "full_name": user_obj.full_name if user_obj else None,
         "email": user_obj.email if user_obj else None,
-        "phone": user_obj.phone_number if user_obj else None,
+        "phone": user_obj.phone if user_obj else None,
+        "dob": user_obj.dob if user_obj else None,
+        "gender": user_obj.gender if user_obj else None,
+        "nationality": getattr(user_obj, "nationality", None) if user_obj else None,
+        "occupation": getattr(user_obj, "occupation", None) if user_obj else None,
+        "address": user_obj.address if user_obj else None,
+        "guardian_name": created.guardian_name,
+        "guardian_phone": created.guardian_phone,
+        "guardian_relation": created.guardian_relation,
+        "monthly_rent": created.monthly_rent,
+        "tenant_code": created.tenant_code,
         "room_bed": room_bed_str
     }
     
@@ -184,7 +202,9 @@ async def update_tenant_profile(
         raise HTTPException(status_code=404, detail="Tenant profile not found")
         
     # Update related user fields if provided
-    if obj_in.full_name is not None or obj_in.email is not None or obj_in.phone is not None:
+    if any(getattr(obj_in, field, None) is not None for field in [
+        "full_name", "email", "phone", "dob", "gender", "nationality", "occupation", "address"
+    ]):
         from app.crud.crud_user import user_crud
         user_obj = await user_crud.get(db, id=db_obj.user_id)
         if user_obj:
@@ -201,9 +221,30 @@ async def update_tenant_profile(
                         )
                 user_obj.email = obj_in.email
             if obj_in.phone is not None:
-                user_obj.phone_number = obj_in.phone
+                user_obj.phone = obj_in.phone
+            if obj_in.dob is not None:
+                user_obj.dob = obj_in.dob
+            if obj_in.gender is not None:
+                user_obj.gender = obj_in.gender
+            if obj_in.nationality is not None:
+                user_obj.nationality = obj_in.nationality
+            if obj_in.occupation is not None:
+                user_obj.occupation = obj_in.occupation
+            if obj_in.address is not None:
+                user_obj.address = obj_in.address
             db.add(user_obj)
             
+    if obj_in.guardian_name is not None:
+        db_obj.guardian_name = obj_in.guardian_name
+    if obj_in.guardian_phone is not None:
+        db_obj.guardian_phone = obj_in.guardian_phone
+    if obj_in.guardian_relation is not None:
+        db_obj.guardian_relation = obj_in.guardian_relation
+    if obj_in.check_out_date is not None:
+        db_obj.check_out_date = obj_in.check_out_date
+    if obj_in.monthly_rent is not None:
+        db_obj.monthly_rent = obj_in.monthly_rent
+
     updated_tenant = await tenant_crud.update(db, db_obj=db_obj, obj_in=obj_in, user_id=current_user.id)
     if obj_in.bed_id:
         from app.models.beds import Bed, BedStatus

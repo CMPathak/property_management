@@ -26,6 +26,13 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import api from "../services/api";
 import { setCredentials } from "../redux/authSlice";
 
+const roleLabels = {
+  SUPER_ADMIN: "Super Admin",
+  OWNER: "Owner",
+  STAFF: "Staff",
+  TENANT: "Tenant"
+};
+
 export default function Settings() {
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
@@ -46,6 +53,7 @@ export default function Settings() {
   const [userEmail, setUserEmail] = useState(currentUser?.email || "");
   const [userPhone, setUserPhone] = useState(currentUser?.phone_number || "");
   const [userRole, setUserRole] = useState(currentUser?.role || "TENANT");
+  const [photoUrl, setPhotoUrl] = useState(currentUser?.photo_url || "");
 
   // Company Profile Form States
   const [companyName, setCompanyName] = useState(localStorage.getItem("companyName") || "Accoumaxx Real Estate Ltd");
@@ -72,6 +80,10 @@ export default function Settings() {
           setUserEmail(profile.email || "");
           setUserPhone(profile.phone_number || "");
           setUserRole(profile.role || "TENANT");
+          setPhotoUrl(profile.photo_url || "");
+          
+          // Only overwrite portal general settings from user profile if user is admin
+          const isAdmin = profile.role === "SUPER_ADMIN" || profile.role === "OWNER" || (profile.role === "STAFF" && profile.designation === "Property Manager");
           setAdminEmail(profile.email || "");
           if (profile.phone_number) setSupportPhone(profile.phone_number);
         }
@@ -229,15 +241,18 @@ export default function Settings() {
               {activeTab === "Profile" && (
                 <Box sx={{ width: "100%" }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2.5, mb: 3.5, p: 2, borderRadius: "12px", bgcolor: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-                    <Avatar sx={{ width: 64, height: 64, bgcolor: "#2563EB", fontWeight: 700, fontSize: "1.5rem" }}>
-                      {fullName ? fullName[0] : "U"}
+                    <Avatar
+                      src={photoUrl ? (photoUrl.startsWith("http") ? photoUrl : `http://localhost:8000/${photoUrl}`) : ""}
+                      sx={{ width: 64, height: 64, bgcolor: "#2563EB", fontWeight: 700, fontSize: "1.5rem" }}
+                    >
+                      {!photoUrl && (fullName ? fullName[0] : "U")}
                     </Avatar>
                     <Box>
                       <Typography variant="h6" fontWeight={800}>
                         {fullName || "User Profile"}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {userRole} Account • {userEmail}
+                        {(roleLabels[userRole] || userRole)} Account • {userEmail}
                       </Typography>
                     </Box>
                   </Box>
@@ -245,7 +260,7 @@ export default function Settings() {
                     <TextField label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} fullWidth />
                     <TextField label="Email Address" value={userEmail} fullWidth disabled />
                     <TextField label="Phone Number" value={userPhone} onChange={(e) => setUserPhone(e.target.value)} fullWidth />
-                    <TextField label="Role Title" value={userRole} fullWidth disabled />
+                    <TextField label="Role Title" value={(roleLabels[userRole] || userRole)} fullWidth disabled />
                   </Box>
                   <Button variant="contained" color="primary" onClick={handleUpdateProfile} sx={{ py: 1.2, px: 4, borderRadius: "10px", fontWeight: 700 }}>
                     Update Profile

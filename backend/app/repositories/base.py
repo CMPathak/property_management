@@ -4,7 +4,7 @@ from typing import Any, Generic, Type, TypeVar
 from pydantic import BaseModel
 from sqlalchemy import select, update, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database.base_class import Base
+from app.core.database import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)

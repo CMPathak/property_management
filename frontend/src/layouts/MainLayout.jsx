@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import api from "../services/api";
+import logoImg from "../assets/logo/logo.png";
 import {
   Box,
   Drawer,
@@ -19,6 +21,7 @@ import {
   Badge,
   InputBase,
   Breadcrumbs,
+  Collapse,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -39,18 +42,34 @@ import {
   ExitToApp as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  ExpandLess,
+  ExpandMore,
 } from "@mui/icons-material";
 import { logOut } from "../redux/authSlice";
+
+const roleLabels = {
+  SUPER_ADMIN: "Super Admin",
+  OWNER: "Owner",
+  STAFF: "Staff",
+  TENANT: "Tenant"
+};
 
 const drawerWidth = 260;
 
 // Owner & Super Admin Menu Items
 const ownerMenuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/" },
-  { text: "Properties", icon: <BusinessIcon />, path: "/properties" },
-  { text: "Floors", icon: <BusinessIcon />, path: "/floors" },
-  { text: "Rooms", icon: <RoomIcon />, path: "/rooms" },
-  { text: "Beds", icon: <BedIcon />, path: "/beds" },
+  {
+    isGroup: true,
+    groupKey: "property_management",
+    title: "PROPERTY MANAGEMENT",
+    items: [
+      { text: "Properties", icon: <BusinessIcon />, path: "/properties" },
+      { text: "Floors", icon: <BusinessIcon />, path: "/floors" },
+      { text: "Rooms", icon: <RoomIcon />, path: "/rooms" },
+      { text: "Beds", icon: <BedIcon />, path: "/beds" },
+    ],
+  },
   { text: "Tenants", icon: <PeopleIcon />, path: "/tenants" },
   { text: "Rent Management", icon: <MoneyIcon />, path: "/rent" },
   { text: "Agreements", icon: <AssessmentIcon />, path: "/agreements" },
@@ -99,9 +118,16 @@ const accountantMenuItems = [
 // Manager Menu Items
 const managerMenuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/" },
-  { text: "Properties (Assigned)", icon: <BusinessIcon />, path: "/properties" },
-  { text: "Rooms", icon: <RoomIcon />, path: "/rooms" },
-  { text: "Beds", icon: <BedIcon />, path: "/beds" },
+  {
+    isGroup: true,
+    groupKey: "property_management",
+    title: "PROPERTY MANAGEMENT",
+    items: [
+      { text: "Properties (Assigned)", icon: <BusinessIcon />, path: "/properties" },
+      { text: "Rooms", icon: <RoomIcon />, path: "/rooms" },
+      { text: "Beds", icon: <BedIcon />, path: "/beds" },
+    ],
+  },
   { text: "Tenants", icon: <PeopleIcon />, path: "/tenants" },
   { text: "Rent", icon: <MoneyIcon />, path: "/rent" },
   { text: "Agreements", icon: <AssessmentIcon />, path: "/agreements" },
@@ -126,17 +152,44 @@ export default function MainLayout({ toggleTheme, mode }) {
   if (user.role === "TENANT") {
     activeMenuItems = tenantMenuItems;
   } else if (user.role === "STAFF") {
-    activeMenuItems = staffMenuItems;
-  } else if (user.role === "ACCOUNTANT") {
-    activeMenuItems = accountantMenuItems;
-  } else if (user.role === "MANAGER") {
-    activeMenuItems = managerMenuItems;
+    if (user.designation === "Property Manager") {
+      activeMenuItems = managerMenuItems;
+    } else if (user.designation === "Accountant") {
+      activeMenuItems = accountantMenuItems;
+    } else {
+      activeMenuItems = staffMenuItems;
+    }
   }
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [openPropMgmt, setOpenPropMgmt] = useState(false);
   const [profileAnchor, setProfileAnchor] = useState(null);
   const [notifAnchor, setNotifAnchor] = useState(null);
+
+  const [notifications, setNotifications] = useState([]);
+  const [readIds, setReadIds] = useState([]);
+
+  const loadNotificationsData = async () => {
+    try {
+      const res = await api.get("/notifications/");
+      setNotifications(res.data || []);
+
+      const stored = localStorage.getItem("read_notifications");
+      setReadIds(stored ? JSON.parse(stored) : []);
+    } catch (e) {
+      console.error("Failed to load notifications in layout:", e);
+    }
+  };
+
+  useEffect(() => {
+    if (user && user.id) {
+      loadNotificationsData();
+    }
+  }, [user, location.pathname]);
+
+  const unreadNotifications = notifications.filter((n) => !readIds.includes(n.id));
+  const unreadCount = unreadNotifications.length;
 
   const currentDrawerWidth = isCollapsed ? 76 : drawerWidth;
 
@@ -175,7 +228,7 @@ export default function MainLayout({ toggleTheme, mode }) {
             display: "flex",
             alignItems: "center",
             justifyContent: isCollapsed ? "center" : "space-between",
-            px: 2.5,
+            px: 2,
             py: 2,
             cursor: "pointer",
             transition: "all 0.2s ease",
@@ -184,44 +237,57 @@ export default function MainLayout({ toggleTheme, mode }) {
         >
           {!isCollapsed ? (
             <>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "10px",
-                    bgcolor: "#2563EB",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 4px 12px rgba(37,99,235,0.4)",
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  width: "100%",
+                  bgcolor: "rgba(255, 255, 255, 0.08)",
+                  px: 1.5,
+                  py: 0.8,
+                  borderRadius: "10px",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                }}
+              >
+                <img
+                  src={logoImg}
+                  alt="Accoumaxx Logo"
+                  style={{
+                    maxHeight: 42,
+                    maxWidth: "100%",
+                    objectFit: "contain",
+                    filter: "brightness(1.15) contrast(1.1)",
                   }}
-                >
-                  <BusinessIcon sx={{ color: "#FFFFFF", fontSize: 20 }} />
-                </Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
-                  ACCOUMAXX
-                </Typography>
+                />
               </Box>
-              <IconButton size="small" sx={{ color: "#94A3B8" }}>
+              <IconButton size="small" sx={{ color: "#94A3B8", ml: 1 }}>
                 <ChevronLeftIcon />
               </IconButton>
             </>
           ) : (
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
-              <Box
-                sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "10px",
-                  bgcolor: "#2563EB",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 0.5,
+                width: "100%",
+                bgcolor: "rgba(255, 255, 255, 0.08)",
+                p: 0.8,
+                borderRadius: "10px",
+              }}
+            >
+              <img
+                src={logoImg}
+                alt="Accoumaxx Logo"
+                style={{
+                  maxHeight: 36,
+                  maxWidth: "100%",
+                  objectFit: "contain",
+                  filter: "brightness(1.15) contrast(1.1)",
                 }}
-              >
-                <BusinessIcon sx={{ color: "#FFFFFF", fontSize: 20 }} />
-              </Box>
+              />
               <ChevronRightIcon sx={{ color: "#94A3B8", fontSize: "0.9rem" }} />
             </Box>
           )}
@@ -232,6 +298,191 @@ export default function MainLayout({ toggleTheme, mode }) {
         {/* Menu Items List */}
         <List sx={{ px: 1.5 }}>
           {activeMenuItems.map((item, index) => {
+            if (item.isGroup) {
+              if (isCollapsed) {
+                return item.items.map((subItem, subIdx) => {
+                  const isSubSelected =
+                    subItem.path === "/"
+                      ? location.pathname === "/"
+                      : location.pathname === subItem.path || location.pathname.startsWith(subItem.path + "/");
+                  return (
+                    <ListItemButton
+                      key={`${index}-${subIdx}`}
+                      component={Link}
+                      to={subItem.path}
+                      selected={isSubSelected}
+                      onClick={() => setMobileOpen(false)}
+                      sx={{
+                        borderRadius: "12px",
+                        mb: 0.75,
+                        justifyContent: "center",
+                        px: 1.5,
+                        py: 1.2,
+                        color: isSubSelected ? "#FFFFFF" : "#94A3B8",
+                        bgcolor: isSubSelected ? "#10B981" : "transparent",
+                        boxShadow: isSubSelected ? "0 4px 14px rgba(16,185,129,0.35)" : "none",
+                        "&:hover": {
+                          bgcolor: isSubSelected ? "#059669" : "rgba(255, 255, 255, 0.06)",
+                          color: "#FFFFFF",
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: isSubSelected ? "#FFFFFF" : "#94A3B8", minWidth: 0, justifyContent: "center" }}>
+                        {subItem.icon}
+                      </ListItemIcon>
+                    </ListItemButton>
+                  );
+                });
+              }
+
+              const isGroupActive = item.items.some(
+                (sub) => location.pathname === sub.path || (sub.path !== "/" && location.pathname.startsWith(sub.path + "/"))
+              );
+
+              if (!openPropMgmt) {
+                // CLOSED State: Image 1 style (Property Management tab with icon and chevron arrow)
+                return (
+                  <ListItemButton
+                    key={index}
+                    onClick={() => setOpenPropMgmt(true)}
+                    sx={{
+                      borderRadius: "12px",
+                      mb: 0.75,
+                      justifyContent: isCollapsed ? "center" : "flex-start",
+                      px: isCollapsed ? 1.5 : 2,
+                      py: 1.2,
+                      color: isGroupActive ? "#FFFFFF" : "#94A3B8",
+                      bgcolor: isGroupActive ? "#10B981" : "transparent",
+                      boxShadow: isGroupActive ? "0 4px 14px rgba(16,185,129,0.35)" : "none",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        bgcolor: isGroupActive ? "#059669" : "rgba(255, 255, 255, 0.06)",
+                        color: "#FFFFFF",
+                        transform: "translateX(2px)",
+                      },
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        color: isGroupActive ? "#FFFFFF" : "#94A3B8",
+                        minWidth: isCollapsed ? 0 : 38,
+                        justifyContent: "center",
+                      }}
+                    >
+                      <BusinessIcon />
+                    </ListItemIcon>
+                    {!isCollapsed && (
+                      <>
+                        <ListItemText
+                          primary="Property Management"
+                          primaryTypographyProps={{
+                            fontSize: "0.875rem",
+                            fontWeight: isGroupActive ? 700 : 500,
+                          }}
+                        />
+                        <ExpandLess sx={{ fontSize: 20, color: isGroupActive ? "#FFFFFF" : "#94A3B8" }} />
+                      </>
+                    )}
+                  </ListItemButton>
+                );
+              }
+
+              // OPEN State: Image 2 style (PROPERTY MANAGEMENT header + Properties, Floors, Rooms, Beds list)
+              return (
+                <Box key={index} sx={{ mb: 1 }}>
+                  {!isCollapsed && (
+                    <ListItemButton
+                      onClick={() => setOpenPropMgmt(false)}
+                      sx={{
+                        py: 0.8,
+                        px: 1.5,
+                        mt: 1,
+                        mb: 0.5,
+                        borderRadius: "8px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        color: "#94A3B8",
+                        "&:hover": { bgcolor: "rgba(255, 255, 255, 0.04)" },
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: "0.72rem",
+                          color: "#94A3B8",
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        PROPERTY MANAGEMENT
+                      </Typography>
+                      <ExpandLess sx={{ fontSize: 18, color: "#94A3B8" }} />
+                    </ListItemButton>
+                  )}
+                  <List component="div" disablePadding>
+                    {item.items.map((subItem, subIdx) => {
+                      const isSubSelected =
+                        subItem.path === "/"
+                          ? location.pathname === "/"
+                          : location.pathname === subItem.path || location.pathname.startsWith(subItem.path + "/");
+                      return (
+                        <ListItemButton
+                          key={subIdx}
+                          component={Link}
+                          to={subItem.path}
+                          selected={isSubSelected}
+                          onClick={() => setMobileOpen(false)}
+                          sx={{
+                            borderRadius: "12px",
+                            mb: 0.75,
+                            justifyContent: isCollapsed ? "center" : "flex-start",
+                            px: isCollapsed ? 1.5 : 2,
+                            py: 1.2,
+                            color: isSubSelected ? "#FFFFFF" : "#94A3B8",
+                            bgcolor: isSubSelected ? "#10B981" : "transparent",
+                            boxShadow: isSubSelected ? "0 4px 14px rgba(16,185,129,0.35)" : "none",
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              bgcolor: isSubSelected ? "#059669" : "rgba(255, 255, 255, 0.06)",
+                              color: "#FFFFFF",
+                              transform: "translateX(2px)",
+                            },
+                            "&.Mui-selected": {
+                              bgcolor: "#10B981",
+                              color: "#FFFFFF",
+                              "& .MuiListItemIcon-root": { color: "#FFFFFF" },
+                              "&:hover": { bgcolor: "#059669" },
+                            },
+                          }}
+                        >
+                          <ListItemIcon
+                            sx={{
+                              color: isSubSelected ? "#FFFFFF" : "#94A3B8",
+                              minWidth: isCollapsed ? 0 : 38,
+                              justifyContent: "center",
+                            }}
+                          >
+                            {subItem.icon}
+                          </ListItemIcon>
+                          {!isCollapsed && (
+                            <ListItemText
+                              primary={subItem.text}
+                              primaryTypographyProps={{
+                                fontSize: "0.875rem",
+                                fontWeight: isSubSelected ? 700 : 500,
+                              }}
+                            />
+                          )}
+                        </ListItemButton>
+                      );
+                    })}
+                  </List>
+                </Box>
+              );
+            }
+
             const isSelected =
               item.path === "/"
                 ? location.pathname === "/"
@@ -250,19 +501,19 @@ export default function MainLayout({ toggleTheme, mode }) {
                   px: isCollapsed ? 1.5 : 2,
                   py: 1.2,
                   color: isSelected ? "#FFFFFF" : "#94A3B8",
-                  bgcolor: isSelected ? "#2563EB" : "transparent",
-                  boxShadow: isSelected ? "0 4px 12px rgba(37,99,235,0.3)" : "none",
+                  bgcolor: isSelected ? "#10B981" : "transparent",
+                  boxShadow: isSelected ? "0 4px 14px rgba(16,185,129,0.35)" : "none",
                   transition: "all 0.2s ease",
                   "&:hover": {
-                    bgcolor: isSelected ? "#1D4ED8" : "rgba(255, 255, 255, 0.06)",
+                    bgcolor: isSelected ? "#059669" : "rgba(255, 255, 255, 0.06)",
                     color: "#FFFFFF",
                     transform: "translateX(2px)",
                   },
                   "&.Mui-selected": {
-                    bgcolor: "#2563EB",
+                    bgcolor: "#10B981",
                     color: "#FFFFFF",
                     "& .MuiListItemIcon-root": { color: "#FFFFFF" },
-                    "&:hover": { bgcolor: "#1D4ED8" },
+                    "&:hover": { bgcolor: "#059669" },
                   },
                 }}
               >
@@ -292,23 +543,40 @@ export default function MainLayout({ toggleTheme, mode }) {
 
       {/* User Footer inside Drawer */}
       {!isCollapsed && (
-        <Box sx={{ p: 2, m: 1.5, borderRadius: "12px", bgcolor: "rgba(255, 255, 255, 0.04)" }}>
-          <Typography variant="caption" sx={{ color: "#64748B", display: "block", mb: 0.5, fontWeight: 600 }}>
-            LOGGED IN AS
-          </Typography>
-          <Typography variant="body2" fontWeight={700} color="#FFFFFF" noWrap>
-            {user.full_name || "User Account"}
-          </Typography>
-          <Typography variant="caption" sx={{ color: "#2563EB", fontWeight: 700 }}>
-            {user.role}
-          </Typography>
+        <Box
+          sx={{
+            p: 2,
+            m: 1.5,
+            borderRadius: "12px",
+            bgcolor: "rgba(255, 255, 255, 0.04)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+          }}
+        >
+          <Avatar
+            src={user?.photo_url ? (user.photo_url.startsWith("http") ? user.photo_url : `http://localhost:8000/${user.photo_url}`) : ""}
+            sx={{ bgcolor: "#2563EB", width: 38, height: 38, fontWeight: 700, fontSize: "1rem" }}
+          >
+            {!user?.photo_url && (user?.full_name ? user.full_name[0] : "U")}
+          </Avatar>
+          <Box sx={{ minWidth: 0 }}>
+
+            <Typography variant="body2" fontWeight={700} color="#FFFFFF" noWrap sx={{ mb: 0.25 }}>
+              {user.full_name || "User Account"}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#60A5FA", fontWeight: 700, letterSpacing: "0.02em", display: "block" }}>
+              {user.role ? (roleLabels[user.role] || user.role) : ""}
+            </Typography>
+          </Box>
         </Box>
       )}
     </Box>
   );
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default", width: "100%" }}>
       {/* Top Header */}
       <AppBar
         position="fixed"
@@ -366,7 +634,7 @@ export default function MainLayout({ toggleTheme, mode }) {
 
             {/* Notifications */}
             <IconButton onClick={handleNotifMenuOpen} color="inherit" sx={{ bgcolor: "#F8FAFC", borderRadius: "10px", border: "1px solid #E2E8F0", p: { xs: 0.75, sm: 1 } }}>
-              <Badge badgeContent={3} color="error">
+              <Badge badgeContent={unreadCount} color="error">
                 <BellIcon fontSize="small" />
               </Badge>
             </IconButton>
@@ -382,20 +650,71 @@ export default function MainLayout({ toggleTheme, mode }) {
             >
               <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <Typography variant="subtitle1" fontWeight={700}>Notifications</Typography>
-                <Typography variant="caption" color="primary" fontWeight={700} sx={{ cursor: "pointer" }}>Mark all read</Typography>
+                <Typography
+                  variant="caption"
+                  color="primary"
+                  fontWeight={700}
+                  sx={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const allIds = notifications.map((n) => n.id);
+                    setReadIds(allIds);
+                    localStorage.setItem("read_notifications", JSON.stringify(allIds));
+                    handleNotifMenuClose();
+                  }}
+                >
+                  Mark all read
+                </Typography>
               </Box>
               <Divider />
-              <MenuItem onClick={handleNotifMenuClose} sx={{ py: 1.5, borderRadius: "10px", my: 0.5 }}>
-                <Box>
-                  <Typography variant="body2" fontWeight={600}>Rent invoice generated for July</Typography>
-                  <Typography variant="caption" color="text.secondary">10 mins ago</Typography>
+              {unreadNotifications.slice(0, 5).map((n) => {
+                const displayTime = n.created_at
+                  ? new Date(n.created_at).toLocaleString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                  : "Recent";
+                return (
+                  <MenuItem
+                    key={n.id}
+                    onClick={() => {
+                      const newRead = [...readIds, n.id];
+                      setReadIds(newRead);
+                      localStorage.setItem("read_notifications", JSON.stringify(newRead));
+                      handleNotifMenuClose();
+                      navigate("/notifications");
+                    }}
+                    sx={{ py: 1.5, borderRadius: "10px", my: 0.5 }}
+                  >
+                    <Box>
+                      <Typography variant="body2" fontWeight={600}>{n.title}</Typography>
+                      <Typography variant="body2" color="text.secondary" noWrap sx={{ maxWidth: 280, display: "block" }}>
+                        {n.body}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">{displayTime}</Typography>
+                    </Box>
+                  </MenuItem>
+                );
+              })}
+              {unreadNotifications.length === 0 && (
+                <Box sx={{ p: 3, textAlign: "center" }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No unread notifications.
+                  </Typography>
                 </Box>
-              </MenuItem>
-              <MenuItem onClick={handleNotifMenuClose} sx={{ py: 1.5, borderRadius: "10px", my: 0.5 }}>
-                <Box>
-                  <Typography variant="body2" fontWeight={600}>Payment confirmed (₹6,000)</Typography>
-                  <Typography variant="caption" color="text.secondary">30 mins ago</Typography>
-                </Box>
+              )}
+              <Divider />
+              <MenuItem
+                onClick={() => {
+                  handleNotifMenuClose();
+                  navigate("/notifications");
+                }}
+                sx={{ justifyContent: "center", py: 1, borderRadius: "10px", mt: 0.5 }}
+              >
+                <Typography variant="caption" color="primary" fontWeight={700}>
+                  View All Notifications
+                </Typography>
               </MenuItem>
             </Menu>
 
@@ -414,15 +733,18 @@ export default function MainLayout({ toggleTheme, mode }) {
                 "&:hover": { bgcolor: "#F8FAFC" },
               }}
             >
-              <Avatar sx={{ bgcolor: "#2563EB", width: 34, height: 34, fontWeight: 700, fontSize: "0.875rem" }}>
-                {user?.full_name ? user.full_name[0] : "U"}
+              <Avatar
+                src={user?.photo_url ? (user.photo_url.startsWith("http") ? user.photo_url : `http://localhost:8000/${user.photo_url}`) : ""}
+                sx={{ bgcolor: "#2563EB", width: 34, height: 34, fontWeight: 700, fontSize: "0.875rem" }}
+              >
+                {!user?.photo_url && (user?.full_name ? user.full_name[0] : "U")}
               </Avatar>
               <Box sx={{ display: { xs: "none", md: "block" } }}>
                 <Typography variant="body2" fontWeight={700} color="text.primary" lineHeight={1.2}>
                   {user.full_name || "Account User"}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  {user.designation || user.role}
+                  {user.designation || (user.role ? (roleLabels[user.role] || user.role) : "")}
                 </Typography>
               </Box>
             </Box>

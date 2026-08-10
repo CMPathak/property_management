@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   Typography,
   Box,
@@ -20,61 +21,73 @@ import api from "../services/api";
 import DataTable from "../components/common/DataTable";
 
 export default function Payments() {
-  const [payments, setPayments] = useState([
-    {
-      id: "pay-101",
-      transaction_id: "TXN987654321",
-      tenant_name: "Raj Kumar",
-      room_bed: "Room 101 - Bed A",
-      amount: 6000,
-      payment_method: "ONLINE / UPI",
-      payment_date: "2026-07-05",
-      status: "COMPLETED",
-    },
-    {
-      id: "pay-102",
-      transaction_id: "TXN876543210",
-      tenant_name: "Sandeep Yadav",
-      room_bed: "Room 102 - Bed A",
-      amount: 3500,
-      payment_method: "CASH",
-      payment_date: "2026-07-15",
-      status: "COMPLETED",
-    },
-  ]);
+  const user = useSelector((state) => state.auth.user);
+  const [myTenantProfile, setMyTenantProfile] = useState(null);
+  const [payments, setPayments] = useState([]);
 
   const [openReceiptDialog, setOpenReceiptDialog] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = async (currentProfile) => {
     try {
       const res = await api.get("/rent/invoices");
       if (res.data && Array.isArray(res.data)) {
         let paidList = [];
         res.data.forEach((inv, idx) => {
-          if (inv.amount_paid > 0 || inv.status === "PAID" || inv.status === "COMPLETED") {
+          const paidAmount = inv.paid_amount || inv.amount_paid || 0;
+          if (paidAmount > 0 || inv.status === "PAID" || inv.status === "COMPLETED") {
+            const profileToMatch = currentProfile || myTenantProfile;
+            const isTenant = user?.role === "TENANT";
+            if (isTenant) {
+              const matchesProfile = (profileToMatch && inv.tenant_profile_id === profileToMatch.id) ||
+                (inv.tenant_name && user.full_name && inv.tenant_name.toLowerCase() === user.full_name.toLowerCase()) ||
+                (inv.tenant_name && user.email && inv.tenant_name.toLowerCase().includes(user.email.split("@")[0].toLowerCase()));
+              if (!matchesProfile) return;
+            }
+
             paidList.push({
               id: `pay-${inv.id || idx}`,
               transaction_id: inv.transaction_id || `TXN${100000 + idx}`,
               tenant_name: inv.tenant_name || "Resident",
               room_bed: inv.room_number ? `Room ${inv.room_number}` : "Allocated",
-              amount: inv.amount_paid || inv.amount || inv.total_amount || 0,
+              amount: paidAmount,
               payment_method: inv.payment_method || "ONLINE / UPI",
               payment_date: inv.created_at ? new Date(inv.created_at).toLocaleDateString() : "Recent",
               status: "COMPLETED",
             });
           }
         });
-        if (paidList.length > 0) setPayments(paidList);
+        setPayments(paidList);
       }
     } catch (e) {
-      console.log("Using default payment logs.");
+      console.error("Failed to load payment logs:", e);
+      setPayments([]);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (user?.role === "TENANT") {
+      api
+        .get("/tenants/?limit=1000")
+        .then((res) => {
+          const list = res.data || [];
+          const matched = list.find(
+            (t) =>
+              (t.user_id && user.id && t.user_id === user.id) ||
+              (t.id && user.id && t.id === user.id) ||
+              (t.email && user.email && t.email.toLowerCase() === user.email.toLowerCase()) ||
+              (t.full_name && user.full_name && t.full_name.toLowerCase() === user.full_name.toLowerCase())
+          );
+          setMyTenantProfile(matched || null);
+          fetchData(matched);
+        })
+        .catch(() => {
+          fetchData(null);
+        });
+    } else {
+      fetchData(null);
+    }
+  }, [user]);
 
   const handleViewReceipt = (p) => {
     setSelectedPayment(p);

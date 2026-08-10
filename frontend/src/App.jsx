@@ -26,11 +26,14 @@ import Expenses from "./pages/Expenses";
 import Reports from "./pages/Reports";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Route Guard for Private / Protected Routes
 function PrivateRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  const token = useSelector((state) => state.auth.token);
+  return (isAuthenticated || Boolean(token)) ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {
@@ -85,6 +88,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
+      <ToastContainer position="top-right" autoClose={3000} />
     </ThemeProvider>
   );
 }

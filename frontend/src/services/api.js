@@ -42,10 +42,10 @@ api.interceptors.response.use(
 
           if (response.status === 200) {
             const { access_token, refresh_token } = response.data;
-            
+
             // Dispatch update to Redux store
             store.dispatch(updateToken({ access_token, refresh_token }));
-            
+
             // Retry the original request with new token
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
             return api(originalRequest);
@@ -54,7 +54,7 @@ api.interceptors.response.use(
           console.error("Refresh token expired or invalid:", refreshError);
         }
       }
-      
+
       // If no refresh token exists or refresh fails, perform automatic logout
       store.dispatch(logOut());
       window.location.href = "/login";

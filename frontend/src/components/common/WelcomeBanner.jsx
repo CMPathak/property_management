@@ -20,7 +20,7 @@ export default function WelcomeBanner({
           ? "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)"
           : "linear-gradient(135deg, #1E3A8A 0%, #1E293B 100%)",
         color: "#FFFFFF",
-        mb: 2.5,
+        mb: 1.5,
         position: "relative",
         overflow: "hidden",
         boxShadow: "0 6px 18px -4px rgba(15, 23, 42, 0.2)",
@@ -40,7 +40,7 @@ export default function WelcomeBanner({
         }}
       />
 
-      <CardContent sx={{ p: { xs: 2, sm: 2.25, md: 2.5 }, "&:last-child": { pb: { xs: 2, sm: 2.25, md: 2.5 } } }}>
+      <CardContent sx={{ p: { xs: 1.5, sm: 1.75, md: 2 }, "&:last-child": { pb: { xs: 1.5, sm: 1.75, md: 2 } } }}>
         <Box
           sx={{
             display: "flex",
@@ -71,7 +71,7 @@ export default function WelcomeBanner({
               </Typography>
             </Box>
 
-            <Typography variant="h5" fontWeight={800} sx={{ color: "#FFFFFF", mb: 0.25, tracking: "-0.02em", fontSize: { xs: "1.15rem", sm: "1.35rem", md: "1.5rem" } }}>
+            <Typography variant="h6" fontWeight={800} sx={{ color: "#FFFFFF", mb: 0.25, tracking: "-0.02em", fontSize: { xs: "1rem", sm: "1.15rem", md: "1.25rem" } }}>
               {title}, {name}!
             </Typography>
 
@@ -92,11 +92,11 @@ export default function WelcomeBanner({
                   endIcon={act.endIcon || <ArrowForwardIcon sx={{ fontSize: "16px !important" }} />}
                   sx={{
                     width: { xs: "100%", sm: "auto" },
-                    borderRadius: "8px",
-                    px: 2,
-                    py: 0.75,
+                    borderRadius: "6px",
+                    px: 1.5,
+                    py: 0.5,
                     fontWeight: 600,
-                    fontSize: "0.8125rem",
+                    fontSize: "0.75rem",
                     bgcolor: act.variant === "outlined" ? "transparent" : "#2563EB",
                     borderColor: "rgba(255,255,255,0.3)",
                     color: "#FFFFFF",

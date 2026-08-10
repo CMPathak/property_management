@@ -2,15 +2,20 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.api.v1.api import api_router
+from app.router import api_router
 from app.core.config import settings
 from app.core.redis import redis_client
+import app.models  # load models into SQLAlchemy registry
+from app.core.scheduler import start_scheduler
+from fastapi.responses import JSONResponse
+import traceback
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup actions
     await redis_client.connect()
+    start_scheduler()
     yield
     # Shutdown actions
     await redis_client.close()
@@ -21,6 +26,13 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan,
 )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "traceback": traceback.format_exc()}
+    )
 
 # CORS configuration
 if settings.BACKEND_CORS_ORIGINS:
@@ -59,7 +71,7 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app.mount(f"/{settings.UPLOAD_DIR}", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 # Include master API router
-app.mount(settings.API_V1_STR, api_router)
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")

@@ -1,4 +1,4 @@
-from app.schemas.users import (
+from app.modules.users.schema import (
     UserBase,
     UserCreate,
     UserUpdate,
@@ -8,31 +8,31 @@ from app.schemas.users import (
     TokenPayload,
     LoginHistoryResponse,
 )
-from app.schemas.properties import (
+from app.modules.properties.schema import (
     PropertyBase,
     PropertyCreate,
     PropertyUpdate,
     PropertyResponse,
 )
-from app.schemas.floors import (
+from app.modules.floors.schema import (
     FloorBase,
     FloorCreate,
     FloorUpdate,
     FloorResponse,
 )
-from app.schemas.rooms import (
+from app.modules.rooms.schema import (
     RoomBase,
     RoomCreate,
     RoomUpdate,
     RoomResponse,
 )
-from app.schemas.beds import (
+from app.modules.beds.schema import (
     BedBase,
     BedCreate,
     BedUpdate,
     BedResponse,
 )
-from app.schemas.tenant import (
+from app.modules.tenant.schema import (
     TenantProfileBase,
     TenantProfileCreate,
     TenantProfileUpdate,
@@ -42,7 +42,7 @@ from app.schemas.tenant import (
     AgreementUpdate,
     AgreementResponse,
 )
-from app.schemas.billing import (
+from app.modules.billing.schema import (
     PaymentBase,
     PaymentCreate,
     PaymentResponse,
@@ -52,7 +52,7 @@ from app.schemas.billing import (
     InvoiceUpdate,
     InvoiceResponse,
 )
-from app.schemas.staff import (
+from app.modules.staff.schema import (
     StaffAttendanceBase,
     StaffAttendanceCreate,
     StaffAttendanceUpdate,
@@ -66,7 +66,7 @@ from app.schemas.staff import (
     StaffProfileUpdate,
     StaffProfileResponse,
 )
-from app.schemas.complaint import (
+from app.modules.complaint.schema import (
     ComplaintTimelineBase,
     ComplaintTimelineCreate,
     ComplaintTimelineResponse,
@@ -75,14 +75,14 @@ from app.schemas.complaint import (
     ComplaintUpdate,
     ComplaintResponse,
 )
-from app.schemas.expense import (
+from app.modules.expense.schema import (
     ExpenseBase,
     ExpenseCreate,
     ExpenseUpdate,
     ExpenseResponse,
 )
-from app.schemas.notification import NotificationLogResponse
-from app.schemas.audit import AuditLogResponse
+from app.modules.notification.schema import NotificationLogResponse
+from app.modules.audit.schema import AuditLogResponse
 
 __all__ = [
     "UserBase",

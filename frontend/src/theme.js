@@ -4,9 +4,9 @@ export const lightTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#2563EB", // Primary Color #2563EB
-      light: "#3B82F6",
-      dark: "#1D4ED8",
+      main: "#10B981", // AccoMaxx Emerald Green #10B981
+      light: "#34D399",
+      dark: "#059669",
       contrastText: "#FFFFFF",
     },
     secondary: {
