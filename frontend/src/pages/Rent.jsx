@@ -62,15 +62,11 @@ import api from "../services/api";
 import DataTable from "../components/common/DataTable";
 import StatCard from "../components/common/StatCard";
 
-const DEFAULT_USER = {
-  full_name: "Ankush Mishra",
-  role: "SUPER_ADMIN",
-};
+
 
 export default function Rent() {
   const navigate = useNavigate();
-  const rawUser = useSelector((state) => state.auth.user);
-  const user = rawUser || DEFAULT_USER;
+  const user = useSelector((state) => state.auth.user);
   const isTenant = user?.role === "TENANT";
 
   // Shared / Admin States
@@ -143,8 +139,8 @@ export default function Rent() {
     due_date:
       inv.due_date
         ? (inv.due_date.includes("-")
-            ? new Date(inv.due_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-            : inv.due_date)
+          ? new Date(inv.due_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+          : inv.due_date)
         : null,
     // Invoice number — backend uses invoice_no
     invoice_number: inv.invoice_number || inv.invoice_no || inv.id || "—",
@@ -204,17 +200,17 @@ export default function Rent() {
       .then((res) => setPaymentSettings(res.data))
       .catch(() => setPaymentSettings(null));
 
-    if (rawUser?.role === "TENANT") {
+    if (user?.role === "TENANT") {
       api
         .get("/tenants/?limit=1000")
         .then((res) => {
           const list = res.data || [];
           const matched = list.find(
             (t) =>
-              (t.user_id && rawUser.id && t.user_id === rawUser.id) ||
-              (t.id && rawUser.id && t.id === rawUser.id) ||
-              (t.email && rawUser.email && t.email.toLowerCase() === rawUser.email.toLowerCase()) ||
-              (t.full_name && rawUser.full_name && t.full_name.toLowerCase() === rawUser.full_name.toLowerCase())
+              (t.user_id && user?.id && t.user_id === user.id) ||
+              (t.id && user?.id && t.id === user.id) ||
+              (t.email && user?.email && t.email.toLowerCase() === user.email.toLowerCase()) ||
+              (t.full_name && user?.full_name && t.full_name.toLowerCase() === user.full_name.toLowerCase())
           );
           setMyTenantProfile(matched || null);
           fetchData(matched);
@@ -225,7 +221,7 @@ export default function Rent() {
     } else {
       fetchData(null);
     }
-  }, [rawUser]);
+  }, [user]);
 
   // Admin Actions
   const handleGenerateRent = async () => {
@@ -411,8 +407,8 @@ export default function Rent() {
               bgcolor: isPaid
                 ? "rgba(16, 185, 129, 0.12)"
                 : isPartial
-                ? "rgba(245, 158, 11, 0.12)"
-                : "rgba(239, 68, 68, 0.12)",
+                  ? "rgba(245, 158, 11, 0.12)"
+                  : "rgba(239, 68, 68, 0.12)",
               color: isPaid ? "#10B981" : isPartial ? "#F59E0B" : "#EF4444",
             }}
           />
@@ -427,8 +423,8 @@ export default function Rent() {
     currentInvoice?.billing_period_start && currentInvoice?.billing_period_end
       ? `${currentInvoice.billing_period_start} - ${currentInvoice.billing_period_end}`
       : currentInvoice?.billing_start_date && currentInvoice?.billing_end_date
-      ? `${new Date(currentInvoice.billing_start_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} - ${new Date(currentInvoice.billing_end_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`
-      : "—";
+        ? `${new Date(currentInvoice.billing_start_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} - ${new Date(currentInvoice.billing_end_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`
+        : "—";
   const dueDate = currentInvoice?.due_date || "—";
   const totalAmount = currentInvoice?.total_amount || 0;
   const isPaid = currentInvoice?.status === "PAID" || currentInvoice?.status === "COMPLETED";
@@ -440,8 +436,8 @@ export default function Rent() {
   const qrImageUrl = paymentSettings?.qr_code_image
     ? paymentSettings.qr_code_image  // use stored image if available
     : upiId
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=${encodeURIComponent(accountHolder || "AccoMaxx")}&am=${totalAmount}&cu=INR&tn=Rent_Payment_${invNumber}`)}`
-    : null;
+      ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=${encodeURIComponent(accountHolder || "AccoMaxx")}&am=${totalAmount}&cu=INR&tn=Rent_Payment_${invNumber}`)}`
+      : null;
 
   return (
     <Box sx={{ flexGrow: 1, pb: 6 }} className="fade-in">
@@ -710,7 +706,7 @@ export default function Rent() {
                     />
                   ) : (
                     <Box sx={{ width: 200, height: 200, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "#F1F5F9", borderRadius: "12px" }}>
-                      <Typography variant="caption" color="#94A3B8" fontWeight={600} textAlign="center">QR code not configured.<br/>Please contact admin.</Typography>
+                      <Typography variant="caption" color="#94A3B8" fontWeight={600} textAlign="center">QR code not configured.<br />Please contact admin.</Typography>
                     </Box>
                   )}
                 </Box>

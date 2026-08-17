@@ -15,10 +15,10 @@ try {
 }
 
 const initialState = {
-  token: storedToken || "demo-token",
-  refreshToken: storedRefreshToken || "demo-refresh-token",
-  user: storedUser || { full_name: "Ankush Mishra", role: "SUPER_ADMIN" },
-  isAuthenticated: true,
+  token: storedToken || null,
+  refreshToken: storedRefreshToken || null,
+  user: storedUser || null,
+  isAuthenticated: !!storedToken,
 };
 
 const authSlice = createSlice({
