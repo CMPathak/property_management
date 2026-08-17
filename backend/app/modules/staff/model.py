@@ -106,3 +106,8 @@ class StaffSalary(Base):
 
     # Relationships
     staff_profile = relationship("StaffProfile", back_populates="salaries")
+
+
+class StaffDepartment(Base):
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    designations: Mapped[list] = mapped_column(JSON, default=list, nullable=False)

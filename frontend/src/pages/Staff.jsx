@@ -58,40 +58,17 @@ import CustomEditIcon from "../components/common/CustomEditIcon";
 import CustomEyeIcon from "../components/common/CustomEyeIcon";
 
 const roleLabels = {
-  SUPER_ADMIN: "Super Admin",
-  OWNER: "Owner",
-  STAFF: "Staff",
-  TENANT: "Tenant"
+  SUPER_ADMIN: "SUPER_ADMIN",
+  OWNER: "OWNER",
+  MANAGER: "MANAGER",
+  ACCOUNTANT: "ACCOUNTANT",
+  STAFF: "STAFF",
+  TENANT: "TENANT"
 };
 
-const DEPARTMENT_DESIGNATIONS = {
-  "Administration": [
-    "Property Manager",
-    "Warden"
-  ],
-  "Accounts & Finance": [
-    "Accountant"
-  ],
-  "Security": [
-    "Security Guard"
-  ],
-  "Housekeeping": [
-    "Cleaner"
-  ],
-  "Maintenance": [
-    "Electrician",
-    "Plumber"
-  ],
-  "Reception / Front Desk": [
-    "Receptionist"
-  ],
-  "Kitchen / Mess": [
-    "Cook"
-  ]
-};
+
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-const DEPARTMENTS = Object.keys(DEPARTMENT_DESIGNATIONS);
 
 export default function Staff() {
   const currentUser = useSelector((state) => state.auth.user);
@@ -105,6 +82,9 @@ export default function Staff() {
   const [staffToView, setStaffToView] = useState(null);
   const [successMsg, setSuccessMsg] = useState("");
 
+  const [departmentDesignations, setDepartmentDesignations] = useState({});
+  const [departments, setDepartments] = useState([]);
+
   // Form State
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -112,8 +92,8 @@ export default function Staff() {
   const [newPassword, setNewPassword] = useState("user123");
   const [newRole, setNewRole] = useState("STAFF");
   const [newEmployeeId, setNewEmployeeId] = useState("");
-  const [newDesignation, setNewDesignation] = useState(DEPARTMENT_DESIGNATIONS[DEPARTMENTS[0]][0]);
-  const [newDepartment, setNewDepartment] = useState(DEPARTMENTS[0]);
+  const [newDesignation, setNewDesignation] = useState("");
+  const [newDepartment, setNewDepartment] = useState("");
   const [newShiftTiming, setNewShiftTiming] = useState("DAY");
   const [newBloodGroup, setNewBloodGroup] = useState("");
   const [newIssueDate, setNewIssueDate] = useState("");
@@ -135,8 +115,8 @@ export default function Staff() {
   const [editRole, setEditRole] = useState("STAFF");
   const [editStatus, setEditStatus] = useState(true);
   const [editEmployeeId, setEditEmployeeId] = useState("");
-  const [editDesignation, setEditDesignation] = useState(DEPARTMENT_DESIGNATIONS[DEPARTMENTS[0]][0]);
-  const [editDepartment, setEditDepartment] = useState(DEPARTMENTS[0]);
+  const [editDesignation, setEditDesignation] = useState("");
+  const [editDepartment, setEditDepartment] = useState("");
   const [editShiftTiming, setEditShiftTiming] = useState("DAY");
   const [editBloodGroup, setEditBloodGroup] = useState("");
   const [editIssueDate, setEditIssueDate] = useState("");
@@ -178,19 +158,38 @@ export default function Staff() {
     }
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const response = await api.get("/staff/departments");
+      const data = response.data || {};
+      setDepartmentDesignations(data);
+      const depts = Object.keys(data);
+      setDepartments(depts);
+      if (depts.length > 0) {
+        setNewDepartment(prev => prev || depts[0]);
+        setNewDesignation(prev => prev || data[depts[0]][0]);
+        setEditDepartment(prev => prev || depts[0]);
+        setEditDesignation(prev => prev || data[depts[0]][0]);
+      }
+    } catch (err) {
+      console.error("Failed to load departments:", err);
+    }
+  };
+
   useEffect(() => {
     fetchStaff();
+    fetchDepartments();
   }, []);
 
   const handleNewDepartmentChange = (dept) => {
     setNewDepartment(dept);
-    const desigs = DEPARTMENT_DESIGNATIONS[dept] || [];
+    const desigs = departmentDesignations[dept] || [];
     setNewDesignation(desigs[0] || "");
   };
 
   const handleEditDepartmentChange = (dept) => {
     setEditDepartment(dept);
-    const desigs = DEPARTMENT_DESIGNATIONS[dept] || [];
+    const desigs = departmentDesignations[dept] || [];
     setEditDesignation(desigs[0] || "");
   };
 
@@ -235,8 +234,8 @@ export default function Staff() {
       setNewPhone("");
       setNewPassword("user123");
       setNewEmployeeId("");
-      setNewDepartment(DEPARTMENTS[0]);
-      setNewDesignation(DEPARTMENT_DESIGNATIONS[DEPARTMENTS[0]][0]);
+      setNewDepartment(departments[0] || "");
+      setNewDesignation(departmentDesignations[departments[0]]?.[0] || "");
       setNewShiftTiming("DAY");
       setNewBloodGroup("");
       setNewIssueDate("");
@@ -718,9 +717,12 @@ export default function Staff() {
         <FormControl size="small" sx={{ minWidth: 120, flexShrink: 0 }}>
           <Select displayEmpty value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} sx={{ borderRadius: "8px", bgcolor: "#fff" }}>
             <MenuItem value="ALL">All Roles</MenuItem>
-            <MenuItem value="STAFF">Staff</MenuItem>
-            <MenuItem value="OWNER">Owner</MenuItem>
-            <MenuItem value="SUPER_ADMIN">Admin</MenuItem>
+            <MenuItem value="SUPER_ADMIN">SUPER_ADMIN</MenuItem>
+            <MenuItem value="OWNER">OWNER</MenuItem>
+            <MenuItem value="MANAGER">MANAGER</MenuItem>
+            <MenuItem value="ACCOUNTANT">ACCOUNTANT</MenuItem>
+            <MenuItem value="STAFF">STAFF</MenuItem>
+            <MenuItem value="TENANT">TENANT</MenuItem>
           </Select>
         </FormControl>
         <FormControl size="small" sx={{ minWidth: 120, flexShrink: 0 }}>
@@ -967,10 +969,12 @@ export default function Staff() {
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Account Role <span style={{ color: "#EF4444" }}>*</span></Typography>
                 <Select fullWidth size="small" displayEmpty value={newRole} onChange={(e) => setNewRole(e.target.value)} disabled={!canAssignRole} sx={{ borderRadius: "8px" }}>
-                  <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
-                  <MenuItem value="OWNER">Owner</MenuItem>
-                  <MenuItem value="STAFF">Staff</MenuItem>
-                  <MenuItem value="TENANT">Tenant</MenuItem>
+                  <MenuItem value="SUPER_ADMIN">SUPER_ADMIN</MenuItem>
+                  <MenuItem value="OWNER">OWNER</MenuItem>
+                  <MenuItem value="MANAGER">MANAGER</MenuItem>
+                  <MenuItem value="ACCOUNTANT">ACCOUNTANT</MenuItem>
+                  <MenuItem value="STAFF">STAFF</MenuItem>
+                  <MenuItem value="TENANT">TENANT</MenuItem>
                 </Select>
                 {!canAssignRole && (
                   <Typography variant="caption" color="error" sx={{ mt: 0.5, display: "block" }}>
@@ -1150,10 +1154,12 @@ export default function Staff() {
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Account Role <span style={{ color: "#EF4444" }}>*</span></Typography>
                 <Select fullWidth size="small" displayEmpty value={editRole} onChange={(e) => setEditRole(e.target.value)} disabled={!canAssignRole} sx={{ borderRadius: "8px" }}>
-                  <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
-                  <MenuItem value="OWNER">Owner</MenuItem>
-                  <MenuItem value="STAFF">Staff</MenuItem>
-                  <MenuItem value="TENANT">Tenant</MenuItem>
+                  <MenuItem value="SUPER_ADMIN">SUPER_ADMIN</MenuItem>
+                  <MenuItem value="OWNER">OWNER</MenuItem>
+                  <MenuItem value="MANAGER">MANAGER</MenuItem>
+                  <MenuItem value="ACCOUNTANT">ACCOUNTANT</MenuItem>
+                  <MenuItem value="STAFF">STAFF</MenuItem>
+                  <MenuItem value="TENANT">TENANT</MenuItem>
                 </Select>
                 {!canAssignRole && (
                   <Typography variant="caption" color="error" sx={{ mt: 0.5, display: "block" }}>
