@@ -110,7 +110,7 @@ export default function Complaints() {
     // 1. Fetch properties
     try {
       const propRes = await api.get("/properties/");
-      propList = propRes.data || [];
+      propList = (propRes.data || []).filter(p => p.status === "ACTIVE");
       setProperties(propList);
     } catch (err) {
       console.error("Failed to load properties:", err);

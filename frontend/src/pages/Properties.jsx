@@ -38,6 +38,7 @@ import {
 import api from "../services/api";
 import CustomEditIcon from "../components/common/CustomEditIcon";
 import CustomEyeIcon from "../components/common/CustomEyeIcon";
+import CustomEyeOffIcon from "../components/common/CustomEyeOffIcon";
 
 const INDIAN_STATES = [
   "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", 
@@ -576,9 +577,11 @@ export default function Properties() {
                       <IconButton size="small" onClick={() => handleOpenEdit(p)} sx={{ color: "#2563EB" }}>
                         <CustomEditIcon sx={{ fontSize: 18 }} />
                       </IconButton>
-                      <IconButton size="small" onClick={() => handleOpenView(p)} sx={{ color: "#2563EB" }}>
-                        <CustomEyeIcon sx={{ fontSize: 20 }} />
-                      </IconButton>
+                      <Tooltip title={p.status === "ACTIVE" ? "Deactivate" : "Activate"} arrow>
+                        <IconButton size="small" onClick={() => handleTogglePropertyStatus(p)} sx={{ color: p.status === "ACTIVE" ? "#2563EB" : "#94A3B8" }}>
+                          {p.status === "ACTIVE" ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <CustomEyeOffIcon sx={{ fontSize: 20 }} />}
+                        </IconButton>
+                      </Tooltip>
                       <IconButton size="small" onClick={() => handleDeleteProperty(p.id)} sx={{ color: "#EF4444" }}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>

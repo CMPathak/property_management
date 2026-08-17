@@ -122,7 +122,8 @@ export default function Tenants() {
 
       try {
         const propertiesRes = await api.get("/properties/");
-        propsData = Array.isArray(propertiesRes.data) ? propertiesRes.data : [];
+        const fetchedProps = Array.isArray(propertiesRes.data) ? propertiesRes.data : [];
+        propsData = fetchedProps.filter(p => p.status === "ACTIVE");
         propsData.forEach((p) => {
           if (p.floors) {
             p.floors.forEach((f) => {

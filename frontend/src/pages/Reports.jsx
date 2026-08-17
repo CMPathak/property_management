@@ -26,7 +26,8 @@ export default function Reports() {
 
       const invoices = invoicesRes.status === "fulfilled" ? invoicesRes.value.data || [] : [];
       const expenses = expensesRes.status === "fulfilled" ? expensesRes.value.data || [] : [];
-      const properties = propertiesRes.status === "fulfilled" ? propertiesRes.value.data || [] : [];
+      const fetchedProps = propertiesRes.status === "fulfilled" ? propertiesRes.value.data || [] : [];
+      const properties = fetchedProps.filter(p => p.status === "ACTIVE");
 
       // Calculate Total Revenue (Collected + Generated Rent)
       let calcRevenue = invoices.reduce((sum, inv) => sum + (inv.paid_amount || inv.total_amount || 0), 0);
