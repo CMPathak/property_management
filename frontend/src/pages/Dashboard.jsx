@@ -195,7 +195,7 @@ function DashboardContent() {
 
         try {
           const propertiesRes = await api.get("/properties/");
-          const propertiesList = propertiesRes.data || [];
+          const propertiesList = (propertiesRes.data || []).filter(p => p.status === "ACTIVE");
 
           if (myProfile?.bed_id && propertiesList.length > 0) {
             propertiesList.forEach((p) => {
@@ -283,7 +283,8 @@ function DashboardContent() {
       } else {
         // Dynamic Owner Data Fetching
         const propertiesRes = await api.get("/properties/");
-        const propertiesData = Array.isArray(propertiesRes.data) ? propertiesRes.data : [];
+        const fetchedProps = Array.isArray(propertiesRes.data) ? propertiesRes.data : [];
+        const propertiesData = fetchedProps.filter(p => p.status === "ACTIVE");
         setPropertiesCount(propertiesData.length);
 
         let rooms = 0;

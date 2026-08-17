@@ -74,7 +74,7 @@ export default function Beds() {
       const propertiesRes = await api.get("/properties/");
       let allRooms = [];
       let allBeds = [];
-      let allProperties = propertiesRes.data || [];
+      let allProperties = (propertiesRes.data || []).filter(p => p.status === "ACTIVE");
       let allFloors = [];
 
       allProperties.forEach((p) => {

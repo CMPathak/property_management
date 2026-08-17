@@ -102,9 +102,10 @@ export default function Rooms() {
   const fetchData = async () => {
     try {
       const floorsRes = await api.get("/properties/");
-      setProperties(floorsRes.data);
+      const activeProps = floorsRes.data.filter(p => p.status === "ACTIVE");
+      setProperties(activeProps);
       let allFloors = [];
-      floorsRes.data.forEach((p) => {
+      activeProps.forEach((p) => {
         if (p.floors) {
           p.floors.forEach((f) => {
             allFloors.push({ ...f, property_name: p.name });
@@ -162,7 +163,7 @@ export default function Rooms() {
           if (matched) {
             try {
               const propsRes = await api.get("/properties/");
-              const propsList = propsRes.data || [];
+              const propsList = (propsRes.data || []).filter(p => p.status === "ACTIVE");
               let foundProp = "Main Property";
               let foundAddr = "Property Location";
               let foundFloor = "1";

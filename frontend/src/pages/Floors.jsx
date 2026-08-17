@@ -74,7 +74,8 @@ export default function Floors() {
   const fetchData = async () => {
     try {
       const propsRes = await api.get("/properties/");
-      const propsData = Array.isArray(propsRes.data) ? propsRes.data : [];
+      const fetchedProps = Array.isArray(propsRes.data) ? propsRes.data : [];
+      const propsData = fetchedProps.filter(p => p.status === "ACTIVE");
       setProperties(propsData);
 
       let floorsList = [];
