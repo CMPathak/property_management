@@ -24,6 +24,8 @@ class UserBase(BaseModel):
     dob: date | None = None
     address: str | None = None
     employment_type: str | None = None
+    nationality: str | None = None
+    occupation: str | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -61,6 +63,8 @@ class UserUpdate(BaseModel):
     dob: date | None = None
     address: str | None = None
     employment_type: str | None = None
+    nationality: str | None = None
+    occupation: str | None = None
 
     @model_validator(mode="before")
     @classmethod

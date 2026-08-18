@@ -24,6 +24,7 @@ import {
   Paper,
   IconButton,
   TablePagination,
+  Tooltip,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -38,6 +39,9 @@ import {
   Delete as DeleteIcon,
   Close as CloseIcon,
   Save as SaveIcon,
+  FilterList as FilterIcon,
+  InfoOutlined as InfoOutlinedIcon,
+  VisibilityOff as VisibilityOffIcon,
 } from "@mui/icons-material";
 import api from "../services/api";
 import CustomEditIcon from "../components/common/CustomEditIcon";
@@ -355,6 +359,22 @@ export default function Complaints() {
     }
   };
 
+  const handleToggleComplaintStatus = async (complaint) => {
+    try {
+      const isClosed = complaint.status === "Closed" || complaint.status === "Resolved" || complaint.status === "CLOSED" || complaint.status === "RESOLVED";
+      const newStatus = isClosed ? "OPEN" : "CLOSED";
+      await api.put(`/complaints/${complaint.id}`, { status: newStatus });
+      setComplaints(
+        complaints.map((c) =>
+          c.id === complaint.id ? { ...c, status: isClosed ? "Pending" : "Closed" } : c
+        )
+      );
+      setSuccessMsg(`Complaint marked as ${isClosed ? "Active" : "Inactive"}`);
+    } catch (err) {
+      alert(formatError(err, "Failed to toggle status."));
+    }
+  };
+
   const handleDeleteComplaint = async (id) => {
     if (!window.confirm("Are you sure you want to delete this complaint?")) return;
     try {
@@ -591,7 +611,7 @@ export default function Complaints() {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, pb: 6 }} className="fade-in">
+    <Box sx={{ flexGrow: 1, pb: 6, minWidth: 0, maxWidth: "100%" }} className="fade-in">
       {/* Page Title & Subtitle */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight={800} color="#0F172A" tracking="-0.02em" sx={{ mb: 0.5 }}>
@@ -929,7 +949,7 @@ export default function Complaints() {
         sx={{
           borderRadius: "16px",
           border: "1px solid #E2E8F0",
-          overflow: "hidden",
+          overflowX: "auto",
           bgcolor: "#fff",
         }}
       >
@@ -1076,16 +1096,15 @@ export default function Complaints() {
                         >
                           <CustomEditIcon sx={{ fontSize: 18 }} />
                         </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            setComplaintToView(c);
-                            setOpenViewDialog(true);
-                          }}
-                          sx={{ color: "#2563EB", "&:hover": { bgcolor: "rgba(37,99,235,0.08)" } }}
-                        >
-                          <CustomEyeIcon sx={{ fontSize: 20 }} />
-                        </IconButton>
+                        <Tooltip title={c.status === "Closed" || c.status === "Resolved" ? "Mark Active" : "Mark Inactive"}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleToggleComplaintStatus(c)}
+                            sx={{ color: c.status !== "Closed" && c.status !== "Resolved" ? "#2563EB" : "#94A3B8", "&:hover": { bgcolor: "rgba(37,99,235,0.08)" } }}
+                          >
+                            {c.status !== "Closed" && c.status !== "Resolved" ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
+                          </IconButton>
+                        </Tooltip>
                         <IconButton
                           size="small"
                           onClick={() => handleDeleteComplaint(c.id)}

@@ -262,9 +262,9 @@ export default function Staff() {
     setEditStatus(s.is_active !== false);
     setEditEmployeeId(s.employee_id || "");
 
-    const targetDept = s.department || DEPARTMENTS[0];
+    const targetDept = s.department || departments[0];
     setEditDepartment(targetDept);
-    setEditDesignation(s.designation || (DEPARTMENT_DESIGNATIONS[targetDept] ? DEPARTMENT_DESIGNATIONS[targetDept][0] : ""));
+    setEditDesignation(s.designation || (departmentDesignations[targetDept] ? departmentDesignations[targetDept][0] : ""));
     setEditShiftTiming(s.shift_timing || "DAY");
     setEditBloodGroup(s.blood_group || "");
     
@@ -576,6 +576,37 @@ export default function Staff() {
         );
       }
     },
+    {
+      id: "action",
+      label: "Actions",
+      render: (s) => (
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
+          <IconButton
+            size="small"
+            onClick={() => handleOpenEdit(s)}
+            sx={{ color: "#64748B", "&:hover": { bgcolor: "rgba(100,116,139,0.08)" } }}
+          >
+            <CustomEditIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <Tooltip title={s.is_active !== false ? "Mark Inactive" : "Mark Active"}>
+            <IconButton
+              size="small"
+              onClick={() => handleToggleStaffStatus(s)}
+              sx={{ color: s.is_active !== false ? "#2563EB" : "#94A3B8", "&:hover": { bgcolor: "rgba(37,99,235,0.08)" } }}
+            >
+              {s.is_active !== false ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
+            </IconButton>
+          </Tooltip>
+          <IconButton
+            size="small"
+            onClick={() => handleDeleteStaff(s.id)}
+            sx={{ color: "#EF4444", "&:hover": { bgcolor: "rgba(239,68,68,0.08)" } }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      ),
+    },
   ];
 
   // Filter Staff List
@@ -609,7 +640,7 @@ export default function Staff() {
   const onDutyCount = staffList.filter((s) => s.shift_timing === "DAY" || s.shift_timing === "ROTATIONAL").length;
 
   return (
-    <Box sx={{ flexGrow: 1, pb: 6 }} className="fade-in">
+    <Box sx={{ flexGrow: 1, pb: 6, minWidth: 0, maxWidth: "100%" }} className="fade-in">
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
           Staff & Management Directory
@@ -709,7 +740,7 @@ export default function Staff() {
         <FormControl size="small" sx={{ minWidth: 150, flexShrink: 0 }}>
           <Select displayEmpty value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} sx={{ borderRadius: "8px", bgcolor: "#fff" }}>
             <MenuItem value="ALL">All Departments</MenuItem>
-            {DEPARTMENTS.map((d) => (
+            {departments.map((d) => (
               <MenuItem key={d} value={d}>{d}</MenuItem>
             ))}
           </Select>
@@ -879,13 +910,13 @@ export default function Staff() {
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Department <span style={{ color: "#EF4444" }}>*</span></Typography>
                   <Select fullWidth size="small" displayEmpty value={newDepartment} onChange={(e) => handleNewDepartmentChange(e.target.value)} sx={{ borderRadius: "8px" }}>
-                    {DEPARTMENTS.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
+                    {departments.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                   </Select>
                 </Box>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Designation / Role <span style={{ color: "#EF4444" }}>*</span></Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Designation <span style={{ color: "#EF4444" }}>*</span></Typography>
                   <Select fullWidth size="small" displayEmpty value={newDesignation} onChange={(e) => setNewDesignation(e.target.value)} sx={{ borderRadius: "8px" }}>
-                    {(DEPARTMENT_DESIGNATIONS[newDepartment] || []).map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
+                    {(departmentDesignations[newDepartment] || []).map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                   </Select>
                 </Box>
               </Box>
@@ -1068,13 +1099,13 @@ export default function Staff() {
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Department <span style={{ color: "#EF4444" }}>*</span></Typography>
                   <Select fullWidth size="small" displayEmpty value={editDepartment} onChange={(e) => handleEditDepartmentChange(e.target.value)} sx={{ borderRadius: "8px" }}>
-                    {DEPARTMENTS.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
+                    {departments.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                   </Select>
                 </Box>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Designation / Role <span style={{ color: "#EF4444" }}>*</span></Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Designation <span style={{ color: "#EF4444" }}>*</span></Typography>
                   <Select fullWidth size="small" displayEmpty value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} sx={{ borderRadius: "8px" }}>
-                    {(DEPARTMENT_DESIGNATIONS[editDepartment] || []).map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
+                    {(departmentDesignations[editDepartment] || []).map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                   </Select>
                 </Box>
               </Box>

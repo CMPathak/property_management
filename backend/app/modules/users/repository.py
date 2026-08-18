@@ -30,6 +30,14 @@ class CRUDUser(BaseRepository[User, UserCreate, UserUpdate]):
         result = await db.execute(statement)
         return result.scalar_one_or_none()
 
+    async def get_by_phone(self, db: AsyncSession, phone: str) -> User | None:
+        """
+        Fetch a user by their unique phone number.
+        """
+        statement = select(User).where(User.phone == phone, User.deleted_at.is_(None))
+        result = await db.execute(statement)
+        return result.scalar_one_or_none()
+
     async def create(
         self, db: AsyncSession, *, obj_in: UserCreate, user_id: uuid.UUID | None = None
     ) -> User:
@@ -65,10 +73,9 @@ class CRUDUser(BaseRepository[User, UserCreate, UserUpdate]):
                 employee_code=obj_in.employee_id,
                 designation=obj_in.designation,
                 department=obj_in.department,
-                organization_id=getattr(db_obj, "organization_id", None),
                 blood_group=obj_in.blood_group,
-                issue_date=obj_in.issue_date,
-                valid_till=obj_in.valid_till
+                joining_date=obj_in.issue_date,
+                id_card_issued_on=obj_in.issue_date
             )
             db.add(staff_profile)
             await db.commit()
@@ -127,10 +134,9 @@ class CRUDUser(BaseRepository[User, UserCreate, UserUpdate]):
                     employee_code=update_data.get("employee_id"),
                     designation=update_data.get("designation"),
                     department=update_data.get("department"),
-                    organization_id=getattr(db_obj, "organization_id", None),
                     blood_group=update_data.get("blood_group"),
-                    issue_date=update_data.get("issue_date"),
-                    valid_till=update_data.get("valid_till")
+                    joining_date=update_data.get("issue_date"),
+                    id_card_issued_on=update_data.get("issue_date")
                 )
                 db.add(staff_profile)
             else:
@@ -142,13 +148,11 @@ class CRUDUser(BaseRepository[User, UserCreate, UserUpdate]):
                     staff_profile.designation = update_data["designation"]
                 if "department" in update_data:
                     staff_profile.department = update_data["department"]
-                staff_profile.organization_id = getattr(db_obj, "organization_id", None)
                 if "blood_group" in update_data:
                     staff_profile.blood_group = update_data["blood_group"]
                 if "issue_date" in update_data:
-                    staff_profile.issue_date = update_data["issue_date"]
-                if "valid_till" in update_data:
-                    staff_profile.valid_till = update_data["valid_till"]
+                    staff_profile.joining_date = update_data["issue_date"]
+                    staff_profile.id_card_issued_on = update_data["issue_date"]
                 db.add(staff_profile)
                 
             await db.commit()

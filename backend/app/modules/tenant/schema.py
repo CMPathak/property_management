@@ -21,9 +21,30 @@ class TenantProfileBase(BaseModel):
 class TenantProfileCreate(TenantProfileBase):
     user_id: uuid.UUID
     bed_id: uuid.UUID | None = None
+    room_id: uuid.UUID | None = None
+    property_id: uuid.UUID | None = None
+    tenant_code: str | None = None
     guardian_name: str | None = None
     guardian_phone: str | None = None
     guardian_relation: str | None = None
+    monthly_rent: float | None = None
+
+class TenantOnboard(BaseModel):
+    full_name: str
+    email: str
+    phone_number: str
+    bed_id: uuid.UUID | None = None
+    security_deposit: float = Field(0.0, ge=0)
+    check_in_date: date | None = None
+    check_out_date: date | None = None
+    guardian_name: str | None = None
+    guardian_relation: str | None = None
+    guardian_phone: str | None = None
+    dob: date | None = None
+    gender: str | None = None
+    nationality: str | None = None
+    occupation: str | None = None
+    address: str | None = None
     monthly_rent: float | None = None
 
 
