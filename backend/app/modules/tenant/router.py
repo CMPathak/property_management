@@ -44,12 +44,13 @@ async def create_tenant_profile(
         obj_in.tenant_code = "TEN-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
     if obj_in.bed_id:
-        bed_stmt = select(Bed).options(selectinload(Bed.room)).where(Bed.id == obj_in.bed_id)
+        from app.modules.rooms.model import Room
+        bed_stmt = select(Bed).options(selectinload(Bed.room).selectinload(Room.floor)).where(Bed.id == obj_in.bed_id)
         bed_res = await db.execute(bed_stmt)
         bed_obj = bed_res.scalar_one_or_none()
-        if bed_obj and bed_obj.room:
+        if bed_obj and bed_obj.room and bed_obj.room.floor:
             obj_in.room_id = bed_obj.room.id
-            obj_in.property_id = bed_obj.room.property_id
+            obj_in.property_id = bed_obj.room.floor.property_id
 
     # Check if a tenant profile already exists for this user_id (active or soft-deleted)
     stmt = select(TenantProfile).where(TenantProfile.user_id == obj_in.user_id)
