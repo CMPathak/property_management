@@ -14,7 +14,8 @@ import {
   InputAdornment,
   Chip,
   IconButton,
-  TablePagination
+  TablePagination,
+  Tooltip
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -23,6 +24,7 @@ import {
   DriveFileRenameOutline as EditIcon,
   Delete as DeleteIcon,
   Close as CloseIcon,
+  VisibilityOff as VisibilityOffIcon
 } from "@mui/icons-material";
 import api from "../services/api";
 import CustomEditIcon from "../components/common/CustomEditIcon";
@@ -243,9 +245,7 @@ export default function Floors() {
 
       {/* Header Area */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mb: 0.5 }}>
-          Home &gt; Properties &gt; {propertyFilter !== "ALL" ? `${selectedPropName} > ` : ""} <span style={{ color: "#0F172A", fontWeight: 600 }}>Floors</span>
-        </Typography>
+
 
         <Box sx={{ mb: 3 }}>
           <Typography variant="h4" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
@@ -379,9 +379,11 @@ export default function Floors() {
                     <IconButton size="small" onClick={() => handleOpenEdit(f)} sx={{ color: "#2563EB" }}>
                       <CustomEditIcon sx={{ fontSize: 18 }} />
                     </IconButton>
-                    <IconButton size="small" onClick={() => handleToggleFloorStatus(f)} sx={{ color: f.status === "ACTIVE" ? "#2563EB" : "#94A3B8" }}>
-                      <CustomEyeIcon sx={{ fontSize: 20 }} />
-                    </IconButton>
+                    <Tooltip title={f.status === "ACTIVE" ? "Mark Inactive" : "Mark Active"}>
+                      <IconButton size="small" onClick={() => handleToggleFloorStatus(f)} sx={{ color: f.status === "ACTIVE" ? "#2563EB" : "#94A3B8" }}>
+                        {f.status === "ACTIVE" ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
+                      </IconButton>
+                    </Tooltip>
                     <IconButton size="small" onClick={() => handleDeleteFloor(f.id)} sx={{ color: "#EF4444" }}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>

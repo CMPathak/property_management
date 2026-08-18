@@ -6,7 +6,7 @@ from app.api import deps
 from app.modules.floors.repository import floor_crud
 from app.modules.users.model import User
 from app.permissions.rbac import PermissionChecker, PermissionAction
-from app.modules.floors.schema import FloorCreate, FloorResponse
+from app.modules.floors.schema import FloorCreate, FloorUpdate, FloorResponse
 
 router = APIRouter()
 
@@ -42,3 +42,21 @@ async def delete_floor(
     if not floor:
         raise HTTPException(status_code=404, detail="Floor not found")
     return await floor_crud.remove(db, id=id, user_id=current_user.id)
+
+
+@router.put("/{id}", response_model=FloorResponse)
+async def update_floor(
+    id: uuid.UUID,
+    obj_in: FloorUpdate,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(PermissionChecker("floor", PermissionAction.UPDATE)),
+) -> Any:
+    """
+    Update a floor.
+    """
+    floor = await floor_crud.get(db, id=id)
+    if not floor:
+        raise HTTPException(status_code=404, detail="Floor not found")
+        
+    return await floor_crud.update(db, db_obj=floor, obj_in=obj_in, user_id=current_user.id)
+

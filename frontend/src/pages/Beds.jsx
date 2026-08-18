@@ -17,7 +17,9 @@ import {
   Card,
   InputAdornment,
   IconButton,
-  TablePagination
+  TablePagination,
+  Tooltip,
+  Snackbar
 } from "@mui/material";
 import {
   DriveFileRenameOutline as EditIcon,
@@ -29,7 +31,9 @@ import {
   Bed as BedIcon,
   Person as PersonIcon,
   Build as ToolsIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Save as SaveIcon,
+  VisibilityOff as VisibilityOffIcon
 } from "@mui/icons-material";
 import api from "../services/api";
 import CustomEditIcon from "../components/common/CustomEditIcon";
@@ -71,7 +75,12 @@ export default function Beds() {
 
   const fetchData = async () => {
     try {
-      const propertiesRes = await api.get("/properties/");
+      const [propertiesRes, tenantsRes] = await Promise.all([
+        api.get("/properties/"),
+        api.get("/tenants/")
+      ]);
+      const tenants = tenantsRes.data || [];
+      
       let allRooms = [];
       let allBeds = [];
       let allProperties = (propertiesRes.data || []).filter(p => p.status === "ACTIVE");
@@ -86,16 +95,21 @@ export default function Beds() {
                 allRooms.push({ ...r, property_id: p.id, property_name: p.name });
                 if (r.beds) {
                   r.beds.forEach((b) => {
+                    // Find assigned tenant
+                    const assignedTenant = tenants.find(t => t.bed_id === b.id && t.status !== "INACTIVE");
+                    
                     allBeds.push({ 
                       ...b, 
                       room_number: r.room_number, 
                       room_id: r.id, 
-                      base_rent: r.base_rent,
+                      base_rent: r.monthly_rent || r.base_rent,
                       room_type: r.room_type,
                       floor_number: f.floor_number,
                       floor_id: f.id,
                       property_name: p.name,
-                      property_id: p.id
+                      property_id: p.id,
+                      tenant_name: assignedTenant ? assignedTenant.full_name : null,
+                      tenant_id: assignedTenant ? assignedTenant.tenant_code : null
                     });
                   });
                 }
@@ -218,6 +232,26 @@ export default function Beds() {
     setOpenViewDialog(true);
   };
 
+  const handleToggleBedStatus = async (bed) => {
+    const newStatus = bed.status === "MAINTENANCE" 
+      ? (bed.tenant_name ? "OCCUPIED" : "VACANT") 
+      : "MAINTENANCE";
+    setBeds((prev) => prev.map((b) => (b.id === bed.id ? { ...b, status: newStatus } : b)));
+    try {
+      const payload = {
+        bed_number: bed.bed_number,
+        bed_type: bed.bed_type ? bed.bed_type.toUpperCase() : null,
+        status: newStatus
+      };
+      await api.put(`/beds/${bed.id}`, payload);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      setBeds((prev) => prev.map((b) => (b.id === bed.id ? { ...b, status: bed.status } : b)));
+      alert(formatError(err));
+    }
+  };
+
   const handleDeleteBed = async (id) => {
     if (!window.confirm("Are you sure you want to delete this bed?")) return;
     try {
@@ -266,52 +300,7 @@ export default function Beds() {
         </Typography>
       </Box>
 
-      {/* 4 Stat Cards */}
-      <Box sx={{ display: "flex", gap: 2, mb: 4, overflowX: "auto", pb: 1, flexWrap: { xs: "nowrap", md: "wrap" } }}>
-        <Card sx={{ minWidth: "180px", flex: 1, p: 2, borderRadius: "12px", display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E2E8F0" }}>
-          <Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", bgcolor: "#EFF6FF", color: "#3B82F6", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <BedIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ fontSize: "0.7rem", lineHeight: 1.2 }}>Total Beds</Typography>
-            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ my: 0.2 }}>{totalBeds}</Typography>
-            <Typography variant="caption" color="#94A3B8" sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}>All beds</Typography>
-          </Box>
-        </Card>
 
-        <Card sx={{ minWidth: "180px", flex: 1, p: 2, borderRadius: "12px", display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E2E8F0" }}>
-          <Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", bgcolor: "#DCFCE7", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <CheckCircleIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ fontSize: "0.7rem", lineHeight: 1.2 }}>Available Beds</Typography>
-            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ my: 0.2 }}>{availableBeds}</Typography>
-            <Typography variant="caption" color="#94A3B8" sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}>{availablePerc}% available</Typography>
-          </Box>
-        </Card>
-
-        <Card sx={{ minWidth: "180px", flex: 1, p: 2, borderRadius: "12px", display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E2E8F0" }}>
-          <Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", bgcolor: "#FEF3C7", color: "#D97706", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <PersonIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ fontSize: "0.7rem", lineHeight: 1.2 }}>Occupied Beds</Typography>
-            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ my: 0.2 }}>{occupiedBeds}</Typography>
-            <Typography variant="caption" color="#94A3B8" sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}>{occupiedPerc}% occupied</Typography>
-          </Box>
-        </Card>
-
-        <Card sx={{ minWidth: "180px", flex: 1, p: 2, borderRadius: "12px", display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E2E8F0" }}>
-          <Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", bgcolor: "#F3E8FF", color: "#9333EA", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ToolsIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ fontSize: "0.7rem", lineHeight: 1.2 }}>Maintenance Beds</Typography>
-            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ my: 0.2 }}>{maintenanceBeds}</Typography>
-            <Typography variant="caption" color="#94A3B8" sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}>{maintenancePerc}% maintenance</Typography>
-          </Box>
-        </Card>
-      </Box>
 
       {/* Filter Bar */}
       <Box sx={{ display: "flex", flexWrap: "nowrap", justifyContent: "space-between", alignItems: "flex-end", gap: 1.5, mb: 3, overflowX: "auto", pb: 1 }}>
@@ -456,9 +445,11 @@ export default function Beds() {
                         <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenEdit(b); }} sx={{ color: "#0EA5E9" }}>
                           <CustomEditIcon sx={{ fontSize: 18 }} />
                         </IconButton>
-                        <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenView(b); }} sx={{ color: "#3B82F6" }}>
-                          <CustomEyeIcon sx={{ fontSize: 20 }} />
-                        </IconButton>
+                        <Tooltip title={b.status === "MAINTENANCE" ? "Mark Vacant" : "Mark Maintenance"}>
+                          <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleToggleBedStatus(b); }} sx={{ color: b.status !== "MAINTENANCE" ? "#3B82F6" : "#94A3B8" }}>
+                            {b.status !== "MAINTENANCE" ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
+                          </IconButton>
+                        </Tooltip>
                         <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleDeleteBed(b.id); }} sx={{ color: "#EF4444" }}>
                           <DeleteIcon fontSize="small" />
                         </IconButton>

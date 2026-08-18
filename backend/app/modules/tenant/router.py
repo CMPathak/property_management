@@ -18,6 +18,7 @@ from app.modules.tenant.schema import (
     AgreementCreate,
     AgreementResponse,
     AgreementUpdate,
+    TenantOnboard,
 )
 from sqlalchemy.orm import selectinload
 from app.modules.tenant.model import TenantProfile, TenantStatus, AgreementStatus
@@ -37,6 +38,18 @@ async def create_tenant_profile(
     """
     from app.modules.beds.model import Bed, BedStatus
     from app.modules.users.repository import user_crud
+    import random, string
+
+    if not getattr(obj_in, "tenant_code", None):
+        obj_in.tenant_code = "TEN-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+    if obj_in.bed_id:
+        bed_stmt = select(Bed).options(selectinload(Bed.room)).where(Bed.id == obj_in.bed_id)
+        bed_res = await db.execute(bed_stmt)
+        bed_obj = bed_res.scalar_one_or_none()
+        if bed_obj and bed_obj.room:
+            obj_in.room_id = bed_obj.room.id
+            obj_in.property_id = bed_obj.room.property_id
 
     # Check if a tenant profile already exists for this user_id (active or soft-deleted)
     stmt = select(TenantProfile).where(TenantProfile.user_id == obj_in.user_id)
@@ -53,6 +66,20 @@ async def create_tenant_profile(
             existing.admission_date = obj_in.admission_date
         if obj_in.status:
             existing.status = obj_in.status
+        if getattr(obj_in, "guardian_name", None) is not None:
+            existing.guardian_name = obj_in.guardian_name
+        if getattr(obj_in, "guardian_phone", None) is not None:
+            existing.guardian_phone = obj_in.guardian_phone
+        if getattr(obj_in, "guardian_relation", None) is not None:
+            existing.guardian_relation = obj_in.guardian_relation
+        if getattr(obj_in, "monthly_rent", None) is not None:
+            existing.monthly_rent = obj_in.monthly_rent
+        if getattr(obj_in, "room_id", None):
+            existing.room_id = obj_in.room_id
+        if getattr(obj_in, "property_id", None):
+            existing.property_id = obj_in.property_id
+        if getattr(obj_in, "tenant_code", None) and not existing.tenant_code:
+            existing.tenant_code = obj_in.tenant_code
 
         if obj_in.bed_id:
             bed_stmt = select(Bed).where(Bed.id == obj_in.bed_id)
@@ -74,6 +101,26 @@ async def create_tenant_profile(
                 bed_obj.status = BedStatus.OCCUPIED
                 await db.commit()
                 await db.refresh(created)
+
+    # Update User fields if provided
+    user_fields = ["dob", "gender", "nationality", "occupation", "address"]
+    user_needs_update = any(getattr(obj_in, field, None) is not None for field in user_fields)
+    
+    if user_needs_update:
+        user_obj = await user_crud.get(db, id=created.user_id)
+        if user_obj:
+            if getattr(obj_in, "dob", None) is not None:
+                user_obj.dob = obj_in.dob
+            if getattr(obj_in, "gender", None) is not None:
+                user_obj.gender = obj_in.gender
+            if getattr(obj_in, "nationality", None) is not None:
+                user_obj.nationality = obj_in.nationality
+            if getattr(obj_in, "occupation", None) is not None:
+                user_obj.occupation = obj_in.occupation
+            if getattr(obj_in, "address", None) is not None:
+                user_obj.address = obj_in.address
+            db.add(user_obj)
+            await db.commit()
 
     user_obj = await user_crud.get(db, id=created.user_id)
 
@@ -104,6 +151,133 @@ async def create_tenant_profile(
     
     return response_dict
 
+
+@router.post("/onboard", response_model=TenantProfileResponse, status_code=status.HTTP_201_CREATED)
+async def onboard_tenant(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    obj_in: TenantOnboard,
+    current_user: User = Depends(PermissionChecker("tenant", PermissionAction.CREATE)),
+) -> Any:
+    """
+    Onboard a new tenant from the frontend form.
+    Creates or updates the User and TenantProfile.
+    """
+    from app.modules.beds.model import Bed, BedStatus
+    from app.modules.users.repository import user_crud
+    from app.modules.users.schema import UserCreate
+    
+    # 1. Handle User
+    user_obj = await user_crud.get_by_email(db, email=obj_in.email)
+    user_by_phone = await user_crud.get_by_phone(db, phone=obj_in.phone_number)
+
+    if user_by_phone and (not user_obj or user_obj.id != user_by_phone.id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A user with this phone number already exists under a different email."
+        )
+
+    if not user_obj:
+        import string
+        import random
+        # Generate random password for the new user
+        password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+        user_create = UserCreate(
+            email=obj_in.email,
+            password=password,
+            full_name=obj_in.full_name,
+            phone=obj_in.phone_number,
+            role=UserRole.TENANT,
+            dob=obj_in.dob,
+            gender=obj_in.gender,
+            address=obj_in.address,
+            nationality=obj_in.nationality,
+            occupation=obj_in.occupation,
+        )
+        user_obj = await user_crud.create(db, obj_in=user_create)
+    else:
+        # Update existing user if needed
+        user_obj.full_name = obj_in.full_name
+        user_obj.phone = obj_in.phone_number
+        if obj_in.dob:
+            user_obj.dob = obj_in.dob
+        if obj_in.gender:
+            user_obj.gender = obj_in.gender
+        if obj_in.address:
+            user_obj.address = obj_in.address
+        db.add(user_obj)
+        await db.commit()
+        await db.refresh(user_obj)
+
+    # 2. Handle TenantProfile
+    stmt = select(TenantProfile).where(TenantProfile.user_id == user_obj.id)
+    res = await db.execute(stmt)
+    existing = res.scalar_one_or_none()
+
+    if existing:
+        existing.deleted_at = None
+        existing.bed_id = obj_in.bed_id
+        existing.security_deposit = obj_in.security_deposit
+        existing.admission_date = obj_in.check_in_date
+        existing.check_out_date = obj_in.check_out_date
+        existing.status = TenantStatus.ACTIVE
+        existing.guardian_name = obj_in.guardian_name
+        existing.guardian_phone = obj_in.guardian_phone
+        existing.guardian_relation = obj_in.guardian_relation
+        existing.monthly_rent = obj_in.monthly_rent
+        await db.commit()
+        await db.refresh(existing)
+        created = existing
+    else:
+        profile_create = TenantProfileCreate(
+            user_id=user_obj.id,
+            bed_id=obj_in.bed_id,
+            security_deposit=obj_in.security_deposit,
+            admission_date=obj_in.check_in_date,
+            status=TenantStatus.ACTIVE,
+            guardian_name=obj_in.guardian_name,
+            guardian_phone=obj_in.guardian_phone,
+            guardian_relation=obj_in.guardian_relation,
+            monthly_rent=obj_in.monthly_rent,
+        )
+        created = await tenant_crud.create(db, obj_in=profile_create, user_id=current_user.id)
+        created.check_out_date = obj_in.check_out_date
+        db.add(created)
+        await db.commit()
+        await db.refresh(created)
+
+    # 3. Handle Bed Status
+    room_bed_str = "Not Allocated"
+    if created.bed_id:
+        bed_stmt = select(Bed).options(selectinload(Bed.room)).where(Bed.id == created.bed_id)
+        bed_res = await db.execute(bed_stmt)
+        bed_obj = bed_res.scalar_one_or_none()
+        if bed_obj:
+            bed_obj.status = BedStatus.OCCUPIED
+            db.add(bed_obj)
+            await db.commit()
+            
+            room_num = bed_obj.room.room_number if bed_obj.room else "Unknown"
+            room_bed_str = f"Room {room_num} - Bed {bed_obj.bed_number}"
+
+    # Build response dict
+    response_dict = {
+        "id": created.id,
+        "user_id": created.user_id,
+        "bed_id": created.bed_id,
+        "created_at": created.created_at,
+        "updated_at": created.updated_at,
+        "security_deposit": created.security_deposit,
+        "admission_date": created.admission_date,
+        "check_out_date": created.check_out_date,
+        "status": created.status,
+        "full_name": user_obj.full_name,
+        "email": user_obj.email,
+        "phone": user_obj.phone,
+        "room_bed": room_bed_str
+    }
+    
+    return response_dict
 
 @router.get("/", response_model=list[TenantProfileResponse])
 async def list_tenants(
@@ -175,7 +349,10 @@ async def update_tenant_profile(
         raise HTTPException(status_code=404, detail="Tenant profile not found")
         
     # Update related user fields if provided
-    if obj_in.full_name is not None or obj_in.email is not None or obj_in.phone is not None:
+    user_fields = ["full_name", "email", "phone", "dob", "gender", "nationality", "occupation", "address"]
+    user_needs_update = any(getattr(obj_in, field, None) is not None for field in user_fields)
+    
+    if user_needs_update:
         from app.modules.users.repository import user_crud
         user_obj = await user_crud.get(db, id=db_obj.user_id)
         if user_obj:
@@ -193,6 +370,16 @@ async def update_tenant_profile(
                 user_obj.email = obj_in.email
             if obj_in.phone is not None:
                 user_obj.phone = obj_in.phone
+            if obj_in.dob is not None:
+                user_obj.dob = obj_in.dob
+            if obj_in.gender is not None:
+                user_obj.gender = obj_in.gender
+            if obj_in.nationality is not None:
+                user_obj.nationality = obj_in.nationality
+            if obj_in.occupation is not None:
+                user_obj.occupation = obj_in.occupation
+            if obj_in.address is not None:
+                user_obj.address = obj_in.address
             db.add(user_obj)
             
     updated_tenant = await tenant_crud.update(db, db_obj=db_obj, obj_in=obj_in, user_id=current_user.id)

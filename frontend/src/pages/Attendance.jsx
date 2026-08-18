@@ -24,7 +24,8 @@ import {
   TableRow,
   Paper,
   TablePagination,
-  InputAdornment
+  InputAdornment,
+  Tooltip
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -37,7 +38,9 @@ import {
   Cancel as AbsentIcon,
   Schedule as LateIcon,
   Assessment as MonthlyIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  InfoOutlined as InfoOutlinedIcon,
+  VisibilityOff as VisibilityOffIcon
 } from "@mui/icons-material";
 import api from "../services/api";
 import CustomEyeIcon from "../components/common/CustomEyeIcon";
@@ -410,6 +413,20 @@ export default function Attendance() {
     }
   };
 
+  const handleToggleAttendanceStatus = async (r) => {
+    if (r.id.toString().startsWith("virtual_")) {
+      alert("Cannot toggle a virtual (unrecorded) attendance entry.");
+      return;
+    }
+    try {
+      const newStatus = r.status === "PRESENT" ? "ABSENT" : "PRESENT";
+      await api.put(`/attendance/${r.id}`, { status: newStatus });
+      fetchAttendance();
+    } catch (err) {
+      alert("Failed to toggle status.");
+    }
+  };
+
   const renderFormFields = (isEdit = false) => (
     <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, pt: 1 }}>
       <Box sx={{ gridColumn: { xs: "span 2", sm: "span 1" } }}>
@@ -720,15 +737,29 @@ export default function Attendance() {
                       </Box>
                     </TableCell>
                     <TableCell sx={{ textAlign: "right", borderBottom: "1px solid #F8FAFC" }}>
-                      <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-                        <IconButton size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "8px", p: 0.5, color: "#2563EB" }}>
-                          <CustomEyeIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                        <IconButton onClick={() => handleOpenEdit(r)} size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "8px", p: 0.5, color: "#2563EB" }}>
+                      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOpenEdit(r)}
+                          sx={{ color: "#64748B", "&:hover": { bgcolor: "rgba(100,116,139,0.08)" } }}
+                        >
                           <CustomEditIcon sx={{ fontSize: 18 }} />
                         </IconButton>
-                        <IconButton onClick={() => handleDeleteRecord(r)} size="small" sx={{ border: "1px solid #E2E8F0", borderRadius: "8px", p: 0.5, color: "#EF4444" }}>
-                          <DeleteIcon sx={{ fontSize: 18 }} />
+                        <Tooltip title={r.status === "PRESENT" ? "Mark Absent" : "Mark Present"}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleToggleAttendanceStatus(r)}
+                            sx={{ color: r.status === "PRESENT" ? "#2563EB" : "#94A3B8", "&:hover": { bgcolor: "rgba(37,99,235,0.08)" } }}
+                          >
+                            {r.status === "PRESENT" ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
+                          </IconButton>
+                        </Tooltip>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteRecord(r)}
+                          sx={{ color: "#EF4444", "&:hover": { bgcolor: "rgba(239,68,68,0.08)" } }}
+                        >
+                          <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Box>
                     </TableCell>

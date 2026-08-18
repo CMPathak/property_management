@@ -18,7 +18,9 @@ import {
   Avatar,
   InputAdornment,
   IconButton,
-  TablePagination
+  TablePagination,
+  Snackbar,
+  Tooltip
 } from "@mui/material";
 import {
   DriveFileRenameOutline as EditIcon,
@@ -32,7 +34,9 @@ import {
   Domain as BuildingIcon,
   Build as ToolsIcon,
   PieChart as PieChartIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Save as SaveIcon,
+  VisibilityOff as VisibilityOffIcon
 } from "@mui/icons-material";
 import api from "../services/api";
 import DataTable from "../components/common/DataTable";
@@ -404,7 +408,7 @@ export default function Rooms() {
       capacity: r.capacity || "",
       base_rent: r.monthly_rent || r.base_rent || "",
       security_deposit: r.security_deposit || "",
-      status: r.is_active !== false ? "ACTIVE" : "INACTIVE",
+      status: r.status !== "MAINTENANCE" ? "ACTIVE" : "INACTIVE",
       description: r.description || ""
     });
     setOpenEditDialog(true);
@@ -418,7 +422,7 @@ export default function Rooms() {
         monthly_rent: parseFloat(formData.base_rent) || 0,
         floor_id: formData.floor_id,
         capacity: parseInt(formData.capacity) || 1,
-        is_active: formData.status === "ACTIVE"
+        status: formData.status === "ACTIVE" ? "AVAILABLE" : "MAINTENANCE"
       };
       await api.put(`/rooms/${roomToEdit.id}`, payload);
       setOpenEditDialog(false);
@@ -435,14 +439,14 @@ export default function Rooms() {
   };
 
   const handleToggleRoomActive = async (room) => {
-    const nextActive = room.is_active === false ? true : false;
-    setRooms((prev) => prev.map((r) => (r.id === room.id ? { ...r, is_active: nextActive } : r)));
+    const nextStatus = room.status === "MAINTENANCE" ? "AVAILABLE" : "MAINTENANCE";
+    setRooms((prev) => prev.map((r) => (r.id === room.id ? { ...r, status: nextStatus } : r)));
     try {
-      await api.put(`/rooms/${room.id}`, { is_active: nextActive });
+      await api.put(`/rooms/${room.id}`, { status: nextStatus });
       fetchData();
     } catch (err) {
       console.error(err);
-      setRooms((prev) => prev.map((r) => (r.id === room.id ? { ...r, is_active: room.is_active } : r)));
+      setRooms((prev) => prev.map((r) => (r.id === room.id ? { ...r, status: room.status } : r)));
       alert(formatError(err));
     }
   };
@@ -493,22 +497,23 @@ export default function Rooms() {
       id: "occupancy",
       label: "Occupancy Status",
       render: (r) => {
-        const isFull = (r.occupied_count || 0) >= (r.capacity || 1);
-        const isEmpty = (r.occupied_count || 0) === 0;
+        const occCount = r.beds ? r.beds.filter(b => b.status === "OCCUPIED").length : 0;
+        const isFull = occCount >= (r.capacity || 1);
+        const isEmpty = occCount === 0;
         let statusLabel = isEmpty ? "Vacant" : isFull ? "Full" : "Semi-Occupied";
         let statusColor = isEmpty ? "success" : isFull ? "error" : "warning";
 
-        return <Chip label={`${statusLabel} (${r.occupied_count || 0}/${r.capacity || 1})`} color={statusColor} size="small" sx={{ borderRadius: "6px" }} />;
+        return <Chip label={`${statusLabel} (${occCount}/${r.capacity || 1})`} color={statusColor} size="small" sx={{ borderRadius: "6px" }} />;
       },
     },
     {
       id: "is_active",
       label: "Status",
       render: (r) => {
-        const isActive = r.is_active !== false;
+        const isActive = r.status !== "MAINTENANCE";
         return (
           <Chip
-            label={isActive ? "ACTIVE" : "INACTIVE"}
+            label={isActive ? "AVAILABLE" : "MAINTENANCE"}
             size="small"
             onClick={() => handleToggleRoomActive(r)}
             sx={{
@@ -529,9 +534,9 @@ export default function Rooms() {
   ];
 
   const totalRooms = rooms.length;
-  const availableRooms = rooms.filter(r => r.is_active !== false && (r.occupied_count || 0) < (r.capacity || 1)).length;
-  const occupiedRooms = rooms.filter(r => r.is_active !== false && (r.occupied_count || 0) >= (r.capacity || 1)).length;
-  const maintenanceRooms = rooms.filter(r => r.is_active === false).length;
+  const availableRooms = rooms.filter(r => r.status !== "MAINTENANCE" && ((r.beds ? r.beds.filter(b => b.status === "OCCUPIED").length : 0) < (r.capacity || 1))).length;
+  const occupiedRooms = rooms.filter(r => r.status !== "MAINTENANCE" && ((r.beds ? r.beds.filter(b => b.status === "OCCUPIED").length : 0) >= (r.capacity || 1))).length;
+  const maintenanceRooms = rooms.filter(r => r.status === "MAINTENANCE").length;
 
   const availablePerc = totalRooms ? ((availableRooms / totalRooms) * 100).toFixed(2) : "0.00";
   const occupiedPerc = totalRooms ? ((occupiedRooms / totalRooms) * 100).toFixed(2) : "0.00";
@@ -544,10 +549,11 @@ export default function Rooms() {
     const matchesFloor = floorFilter === "ALL" || r.floor_id === floorFilter;
 
     let matchesStatus = true;
-    const isFull = (r.occupied_count || 0) >= (r.capacity || 1);
-    if (statusFilter === "AVAILABLE") matchesStatus = r.is_active !== false && !isFull;
-    if (statusFilter === "FULL") matchesStatus = r.is_active !== false && isFull;
-    if (statusFilter === "MAINTENANCE") matchesStatus = r.is_active === false;
+    const occCount = r.beds ? r.beds.filter(b => b.status === "OCCUPIED").length : 0;
+    const isFull = occCount >= (r.capacity || 1);
+    if (statusFilter === "AVAILABLE") matchesStatus = r.status !== "MAINTENANCE" && !isFull;
+    if (statusFilter === "FULL") matchesStatus = r.status !== "MAINTENANCE" && isFull;
+    if (statusFilter === "MAINTENANCE") matchesStatus = r.status === "MAINTENANCE";
 
     return matchesSearch && matchesProperty && matchesFloor && matchesStatus;
   });
@@ -638,68 +644,6 @@ export default function Rooms() {
 
       </Box>
 
-      {/* 5 Stat Cards */}
-      <Box sx={{ display: "flex", gap: 2, mb: 4, overflowX: "auto", pb: 1, flexWrap: { xs: "nowrap", md: "wrap" } }}>
-        {/* Card 1: Total Rooms */}
-        <Card sx={{ minWidth: "180px", flex: 1, p: 2, borderRadius: "12px", display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E2E8F0" }}>
-          <Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", bgcolor: "#EFF6FF", color: "#3B82F6", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <BedIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ fontSize: "0.7rem", lineHeight: 1.2 }}>Total Rooms</Typography>
-            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ my: 0.2 }}>{totalRooms}</Typography>
-            <Typography variant="caption" color="#94A3B8" sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}>All rooms</Typography>
-          </Box>
-        </Card>
-
-        {/* Card 2: Available Rooms */}
-        <Card sx={{ minWidth: "180px", flex: 1, p: 2, borderRadius: "12px", display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E2E8F0" }}>
-          <Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", bgcolor: "#DCFCE7", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <DoorIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ fontSize: "0.7rem", lineHeight: 1.2 }}>Available Rooms</Typography>
-            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ my: 0.2 }}>{availableRooms}</Typography>
-            <Typography variant="caption" color="#94A3B8" sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}>{availablePerc}% available</Typography>
-          </Box>
-        </Card>
-
-        {/* Card 3: Occupied Rooms */}
-        <Card sx={{ minWidth: "180px", flex: 1, p: 2, borderRadius: "12px", display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E2E8F0" }}>
-          <Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", bgcolor: "#FEF3C7", color: "#D97706", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <BuildingIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ fontSize: "0.7rem", lineHeight: 1.2 }}>Occupied Rooms</Typography>
-            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ my: 0.2 }}>{occupiedRooms}</Typography>
-            <Typography variant="caption" color="#94A3B8" sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}>{occupiedPerc}% occupied</Typography>
-          </Box>
-        </Card>
-
-        {/* Card 4: Maintenance Rooms */}
-        <Card sx={{ minWidth: "180px", flex: 1, p: 2, borderRadius: "12px", display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E2E8F0" }}>
-          <Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", bgcolor: "#FEE2E2", color: "#DC2626", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ToolsIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ fontSize: "0.7rem", lineHeight: 1.2 }}>Maintenance Rooms</Typography>
-            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ my: 0.2 }}>{maintenanceRooms}</Typography>
-            <Typography variant="caption" color="#94A3B8" sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}>{maintenancePerc}% maintenance</Typography>
-          </Box>
-        </Card>
-
-        {/* Card 5: Occupancy Rate */}
-        <Card sx={{ minWidth: "180px", flex: 1, p: 2, borderRadius: "12px", display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E2E8F0" }}>
-          <Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: "50%", bgcolor: "#F3E8FF", color: "#9333EA", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <PieChartIcon sx={{ fontSize: 22 }} />
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ fontSize: "0.7rem", lineHeight: 1.2 }}>Occupancy Rate</Typography>
-            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ my: 0.2 }}>{occupancyRate}%</Typography>
-            <Typography variant="caption" color="#94A3B8" sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}>Overall</Typography>
-          </Box>
-        </Card>
-      </Box>
 
       {/* Filters and Search Bar */}
       <Box sx={{ display: "flex", flexWrap: "nowrap", justifyContent: "space-between", alignItems: "flex-end", mb: 3, gap: 1.5, p: 2, bgcolor: "#fff", borderRadius: "12px", border: "1px solid #E2E8F0", overflowX: "auto" }}>
@@ -802,10 +746,10 @@ export default function Rooms() {
               </tr>
             ) : (
               filteredRooms.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r, idx) => {
-                const isFull = (r.occupied_count || 0) >= (r.capacity || 1);
-                const isMaintenance = r.is_active === false;
+                const occ = r.beds ? r.beds.filter(b => b.status === "OCCUPIED").length : 0;
+                const isFull = occ >= (r.capacity || 1);
+                const isMaintenance = r.status === "MAINTENANCE";
                 const capacity = r.capacity || 1;
-                const occ = r.occupied_count || 0;
                 const left = capacity - occ;
 
                 // Room Type Chip Styles
@@ -838,8 +782,8 @@ export default function Rooms() {
                   statBg = "#FEE2E2";
                   statText = "Full";
                 } else if (occ > 0) {
-                  bedColor = "#D97706";
-                  bedSubtext = `${left} Left`;
+                  bedColor = "#16A34A";
+                  bedSubtext = `${left} Available`;
                 }
 
                 return (
@@ -886,9 +830,11 @@ export default function Rooms() {
                         <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenEdit(r); }} sx={{ color: "#0EA5E9" }}>
                           <CustomEditIcon sx={{ fontSize: 18 }} />
                         </IconButton>
-                        <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenView(r); }} sx={{ color: "#3B82F6" }}>
-                          <CustomEyeIcon sx={{ fontSize: 20 }} />
-                        </IconButton>
+                        <Tooltip title={r.status !== "MAINTENANCE" ? "Mark Maintenance" : "Mark Available"}>
+                          <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleToggleRoomActive(r); }} sx={{ color: r.status !== "MAINTENANCE" ? "#3B82F6" : "#94A3B8" }}>
+                            {r.status !== "MAINTENANCE" ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
+                          </IconButton>
+                        </Tooltip>
                         <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleDeleteRoom(r.id); }} sx={{ color: "#EF4444" }}>
                           <DeleteIcon fontSize="small" />
                         </IconButton>

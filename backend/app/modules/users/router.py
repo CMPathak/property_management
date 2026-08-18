@@ -9,13 +9,36 @@ from sqlalchemy import select, and_
 from app.api import deps
 from app.modules.users.repository import user_crud
 from app.modules.users.model import User, UserRole
-from app.modules.staff.model import StaffProfile
+from app.modules.staff.model import StaffProfile, StaffDepartment
 from app.permissions.rbac import require_role
 from app.modules.users.schema import UserCreate, UserUpdate, UserResponse
 from app.utils.storage import storage_provider
 from app.utils.id_card_generator import generate_staff_id_card_pdf
 
 router = APIRouter()
+
+
+@router.get("/departments")
+async def get_departments(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user),
+) -> dict:
+    """
+    Get all staff departments and their designations.
+    Returns a dictionary mapping department name to a list of designations.
+    """
+    statement = select(StaffDepartment)
+    result = await db.execute(statement)
+    departments_list = result.scalars().all()
+    
+    if not departments_list:
+        return {}
+        
+    res = {}
+    for dept in departments_list:
+        res[dept.name] = dept.designations
+        
+    return res
 
 
 @router.get("/", response_model=list[UserResponse])
@@ -61,6 +84,15 @@ async def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email already exists."
         )
+    
+    if obj_in.phone:
+        existing_phone = await user_crud.get_by_phone(db, phone=obj_in.phone)
+        if existing_phone:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A user with this phone number already exists."
+            )
+            
     return await user_crud.create(db, obj_in=obj_in, user_id=current_user.id)
 
 

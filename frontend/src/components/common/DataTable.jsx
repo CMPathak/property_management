@@ -72,7 +72,7 @@ export default function DataTable({
   }, [processedData, page, rowsPerPage]);
 
   return (
-    <Card sx={{ borderRadius: "16px", border: "1px solid #E2E8F0", overflow: "hidden" }}>
+    <Card sx={{ width: "100%", maxWidth: "100%", borderRadius: "16px", border: "1px solid #E2E8F0", overflow: "hidden" }}>
       {/* Header & Controls Toolbar */}
       <Box
         sx={{

@@ -79,28 +79,6 @@ def calc_work_and_overtime(in_time: datetime.time | None, out_time: datetime.tim
     return (work_hrs, over_hrs)
 
 
-@router.get("/departments")
-async def get_departments(
-    db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_user),
-) -> dict:
-    """
-    Get all staff departments and their designations.
-    Returns a dictionary mapping department name to a list of designations.
-    """
-    statement = select(StaffDepartment)
-    result = await db.execute(statement)
-    departments = result.scalars().all()
-    
-    if not departments:
-        return {}
-        
-    res = {}
-    for dept in departments:
-        res[dept.name] = dept.designations
-        
-    return res
-
 
 @router.get("/")
 async def list_attendance(

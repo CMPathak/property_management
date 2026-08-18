@@ -18,7 +18,8 @@ import {
   Alert,
   Snackbar,
   Card,
-  TablePagination
+  TablePagination,
+  Tooltip
 } from "@mui/material";
 import {
   People as PeopleIcon,
@@ -36,6 +37,7 @@ import {
   Delete as DeleteIcon,
   InsertDriveFile as FileIcon,
   Save as SaveIcon,
+  VisibilityOff as VisibilityOffIcon,
 } from "@mui/icons-material";
 import api from "../services/api";
 import CustomEditIcon from "../components/common/CustomEditIcon";
@@ -118,6 +120,7 @@ export default function Tenants() {
       let allFloors = [];
       let allRooms = [];
       let allBedsList = [];
+      let vacantBeds = [];
       const bedMap = {};
 
       try {
@@ -240,8 +243,8 @@ export default function Tenants() {
         const room_bed_display = bedInfo
           ? `${bedInfo.room_number} / ${bedInfo.bed_number}`
           : t.room_bed && t.room_bed !== "Not Allocated"
-          ? t.room_bed
-          : `${101 + (idx % 5)} / B-${101 + (idx % 5)}-A`;
+            ? t.room_bed
+            : `${101 + (idx % 5)} / B-${101 + (idx % 5)}-A`;
 
         const rent_amount =
           t.agreements && t.agreements.length > 0
@@ -336,8 +339,17 @@ export default function Tenants() {
         phone_number: addForm.phone,
         bed_id: addForm.bed_id || null,
         security_deposit: parseFloat(addForm.security_deposit) || 0,
-        check_in_date: sanitizeDate(addForm.check_in_date),
-        check_out_date: sanitizeDate(addForm.check_out_date),
+        check_in_date: sanitizeDate(addForm.check_in_date) || null,
+        check_out_date: sanitizeDate(addForm.check_out_date) || null,
+        guardian_name: addForm.guardian_name || null,
+        guardian_relation: addForm.relation || null,
+        guardian_phone: addForm.guardian_mobile || null,
+        dob: addForm.dob || null,
+        gender: addForm.gender || null,
+        nationality: addForm.nationality || null,
+        occupation: addForm.occupation || null,
+        address: addForm.address || null,
+        monthly_rent: parseFloat(addForm.monthly_rent) || null,
       });
 
       const newTenantId = res.data?.tenant_id || res.data?.id;
@@ -504,13 +516,13 @@ export default function Tenants() {
         availableBedsList = [...beds, currentBed];
       }
     }
-    
+
     const availRooms = form.property_id ? rooms.filter((r) => r.property_id === form.property_id) : rooms;
     const availBeds = form.room_id
       ? availableBedsList.filter((b) => b.room_id === form.room_id)
       : form.property_id
-      ? availableBedsList.filter((b) => b.property_id === form.property_id)
-      : availableBedsList;
+        ? availableBedsList.filter((b) => b.property_id === form.property_id)
+        : availableBedsList;
 
     return (
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2.5, pt: 1 }}>
@@ -891,7 +903,7 @@ export default function Tenants() {
   const tenantsWithDues = tenants.filter((t) => (t.due_amount || 0) > 0).length || 18;
 
   return (
-    <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, bgcolor: "#FAFBFC", minHeight: "100vh" }}>
+    <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, bgcolor: "#FAFBFC", minHeight: "100vh", minWidth: 0, maxWidth: "100%" }}>
       {/* Page Title & Subtitle */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
@@ -1590,16 +1602,18 @@ export default function Tenants() {
                         >
                           <CustomEditIcon sx={{ fontSize: 18 }} />
                         </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenView(t);
-                          }}
-                          sx={{ color: "#3B82F6" }}
-                        >
-                          <CustomEyeIcon sx={{ fontSize: 20 }} />
-                        </IconButton>
+                        <Tooltip title={t.status === "ACTIVE" ? "Mark Inactive" : "Mark Active"}>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleTenantStatus(t);
+                            }}
+                            sx={{ color: t.status === "ACTIVE" ? "#3B82F6" : "#94A3B8" }}
+                          >
+                            {t.status === "ACTIVE" ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
+                          </IconButton>
+                        </Tooltip>
                         <IconButton
                           size="small"
                           onClick={(e) => {
@@ -1634,7 +1648,7 @@ export default function Tenants() {
           rowsPerPageOptions={[5, 10, 25, 50]}
           onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
           labelRowsPerPage=""
-          sx={{ 
+          sx={{
             ".MuiTablePagination-toolbar": { minHeight: "auto", p: 0 },
             ".MuiTablePagination-actions": { ml: 1 }
           }}
