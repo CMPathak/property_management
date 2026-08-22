@@ -125,9 +125,6 @@ export default function Expenses() {
           <Typography variant="h5" fontWeight={800} color="text.primary" tracking="-0.02em">
             Expense Tracker
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Track utility bills, property repairs, maintenance costs, and operational payouts.
-          </Typography>
         </Box>
         <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => setOpenAddDialog(true)}>
           Add Expense

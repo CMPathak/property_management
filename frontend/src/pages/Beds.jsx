@@ -80,7 +80,7 @@ export default function Beds() {
         api.get("/tenants/")
       ]);
       const tenants = tenantsRes.data || [];
-      
+
       let allRooms = [];
       let allBeds = [];
       let allProperties = (propertiesRes.data || []).filter(p => p.status === "ACTIVE");
@@ -97,11 +97,11 @@ export default function Beds() {
                   r.beds.forEach((b) => {
                     // Find assigned tenant
                     const assignedTenant = tenants.find(t => t.bed_id === b.id && t.status !== "INACTIVE");
-                    
-                    allBeds.push({ 
-                      ...b, 
-                      room_number: r.room_number, 
-                      room_id: r.id, 
+
+                    allBeds.push({
+                      ...b,
+                      room_number: r.room_number,
+                      room_id: r.id,
                       base_rent: r.monthly_rent || r.base_rent,
                       room_type: r.room_type,
                       floor_number: f.floor_number,
@@ -233,8 +233,8 @@ export default function Beds() {
   };
 
   const handleToggleBedStatus = async (bed) => {
-    const newStatus = bed.status === "MAINTENANCE" 
-      ? (bed.tenant_name ? "OCCUPIED" : "VACANT") 
+    const newStatus = bed.status === "MAINTENANCE"
+      ? (bed.tenant_name ? "OCCUPIED" : "VACANT")
       : "MAINTENANCE";
     setBeds((prev) => prev.map((b) => (b.id === bed.id ? { ...b, status: newStatus } : b)));
     try {
@@ -274,18 +274,18 @@ export default function Beds() {
   const maintenancePerc = totalBeds ? ((maintenanceBeds / totalBeds) * 100).toFixed(2) : "0.00";
 
   const filteredBeds = beds.filter((b) => {
-    const matchesSearch = String(b.bed_number || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (b.tenant_name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (b.property_name || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = String(b.bed_number || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (b.tenant_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (b.property_name || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesProperty = propertyFilter === "ALL" || b.property_id === propertyFilter;
     const matchesFloor = floorFilter === "ALL" || b.floor_id === floorFilter;
     const matchesRoom = roomFilter === "ALL" || b.room_id === roomFilter;
-    
+
     let matchesStatus = true;
     if (statusFilter === "AVAILABLE") matchesStatus = b.status === "VACANT" || !b.status;
     if (statusFilter === "OCCUPIED") matchesStatus = b.status === "OCCUPIED";
     if (statusFilter === "MAINTENANCE") matchesStatus = b.status === "MAINTENANCE";
-    
+
     return matchesSearch && matchesProperty && matchesFloor && matchesRoom && matchesStatus;
   });
 
@@ -295,20 +295,16 @@ export default function Beds() {
         <Typography variant="h4" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
           Beds Management
         </Typography>
-        <Typography variant="body2" color="#64748B">
-          Manage all beds, allocation and availability.
-        </Typography>
       </Box>
 
 
 
       {/* Filter Bar */}
-      <Box sx={{ display: "flex", flexWrap: "nowrap", justifyContent: "space-between", alignItems: "flex-end", gap: 1.5, mb: 3, overflowX: "auto", pb: 1 }}>
-        
+      <Box sx={{ display: "flex", flexWrap: "nowrap", justifyContent: "space-between", alignItems: "center", gap: 1.5, mb: 3, p: 1.5, px: 2, bgcolor: "#fff", borderRadius: "12px", border: "1px solid #E2E8F0", overflowX: "auto" }}>
+
         {/* Left Side: Filters & Search */}
         <Box sx={{ display: "flex", gap: 1.5, flexWrap: "nowrap", alignItems: "flex-end" }}>
           <FormControl size="small" sx={{ minWidth: "130px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>Select Property</Typography>
             <Select value={propertyFilter} onChange={(e) => { setPropertyFilter(e.target.value); setFloorFilter("ALL"); setRoomFilter("ALL"); }} displayEmpty sx={{ borderRadius: "8px", "& fieldset": { borderColor: "#E2E8F0" }, fontSize: "0.875rem" }}>
               <MenuItem value="ALL">All Properties</MenuItem>
               {properties.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
@@ -316,7 +312,6 @@ export default function Beds() {
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: "110px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>Select Floor</Typography>
             <Select value={floorFilter} onChange={(e) => { setFloorFilter(e.target.value); setRoomFilter("ALL"); }} displayEmpty sx={{ borderRadius: "8px", "& fieldset": { borderColor: "#E2E8F0" }, fontSize: "0.875rem" }}>
               <MenuItem value="ALL">All Floors</MenuItem>
               {floors.filter(f => propertyFilter === "ALL" || f.property_id === propertyFilter).map(f => <MenuItem key={f.id} value={f.id}>Floor {f.floor_number}</MenuItem>)}
@@ -324,7 +319,6 @@ export default function Beds() {
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: "110px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>Select Room</Typography>
             <Select value={roomFilter} onChange={(e) => setRoomFilter(e.target.value)} displayEmpty sx={{ borderRadius: "8px", "& fieldset": { borderColor: "#E2E8F0" }, fontSize: "0.875rem" }}>
               <MenuItem value="ALL">All Rooms</MenuItem>
               {rooms.filter(r => (propertyFilter === "ALL" || r.property_id === propertyFilter) && (floorFilter === "ALL" || r.floor_id === floorFilter)).map(r => <MenuItem key={r.id} value={r.id}>{r.room_number}</MenuItem>)}
@@ -332,7 +326,6 @@ export default function Beds() {
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: "110px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>Bed Status</Typography>
             <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} displayEmpty sx={{ borderRadius: "8px", "& fieldset": { borderColor: "#E2E8F0" }, fontSize: "0.875rem" }}>
               <MenuItem value="ALL">All Status</MenuItem>
               <MenuItem value="AVAILABLE">Available</MenuItem>
@@ -477,7 +470,7 @@ export default function Beds() {
           rowsPerPageOptions={[5, 10, 25, 50]}
           onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
           labelRowsPerPage=""
-          sx={{ 
+          sx={{
             ".MuiTablePagination-toolbar": { minHeight: "auto", p: 0 },
             ".MuiTablePagination-actions": { ml: 1 }
           }}

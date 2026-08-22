@@ -144,8 +144,20 @@ export default function Complaints() {
             email: u.email,
             room_bed: "Unassigned",
           });
+          existingUserIds.add(u.id);
+          existingEmails.add(u.email);
         }
       });
+      
+      if (user && !existingUserIds.has(user.id) && !existingEmails.has(user.email)) {
+        tenantsList.push({
+          id: user.id,
+          user_id: user.id,
+          full_name: user.full_name || user.email.split("@")[0],
+          email: user.email,
+          room_bed: "Unassigned",
+        });
+      }
     } catch (e) {
       console.error("Failed to merge tenant users:", e);
     }
@@ -257,11 +269,24 @@ export default function Complaints() {
   }, [user]);
 
   const handleOpenAdd = () => {
+    let defaultTenantId = "";
+    if (user) {
+      const userTenant = tenants.find(
+        (t) =>
+          t.user_id === user.id ||
+          t.id === user.id ||
+          (t.email && user.email && t.email.toLowerCase() === user.email.toLowerCase())
+      );
+      if (userTenant) {
+        defaultTenantId = userTenant.id;
+      }
+    }
+
     setAddForm({
       title: "",
       category: "Network",
       property_name: properties[0]?.name || "",
-      tenant_profile_id: tenants[0]?.id || "",
+      tenant_profile_id: defaultTenantId,
       priority: "Medium",
       status: "Pending",
       description: "",
@@ -617,13 +642,11 @@ export default function Complaints() {
         <Typography variant="h5" fontWeight={800} color="#0F172A" tracking="-0.02em" sx={{ mb: 0.5 }}>
           Complaints
         </Typography>
-        <Typography variant="body2" color="#64748B" fontWeight={500}>
-          Manage tenant complaints and track resolution.
-        </Typography>
       </Box>
 
       {/* 5 Stat Cards Row - Exactly Matching Image */}
-      <Box
+      {(user?.role === "SUPER_ADMIN" || user?.role === "OWNER" || user?.role === "ADMIN") && (
+        <Box
         sx={{
           display: "grid",
           gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(5, 1fr)" },
@@ -831,6 +854,7 @@ export default function Complaints() {
           </Box>
         </Card>
       </Box>
+      )}
 
       {/* Filter & Search Bar - Single Line Without Wrapping */}
       <Box
@@ -1096,22 +1120,26 @@ export default function Complaints() {
                         >
                           <CustomEditIcon sx={{ fontSize: 18 }} />
                         </IconButton>
-                        <Tooltip title={c.status === "Closed" || c.status === "Resolved" ? "Mark Active" : "Mark Inactive"}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleToggleComplaintStatus(c)}
-                            sx={{ color: c.status !== "Closed" && c.status !== "Resolved" ? "#2563EB" : "#94A3B8", "&:hover": { bgcolor: "rgba(37,99,235,0.08)" } }}
-                          >
-                            {c.status !== "Closed" && c.status !== "Resolved" ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
-                          </IconButton>
-                        </Tooltip>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDeleteComplaint(c.id)}
-                          sx={{ color: "#EF4444", "&:hover": { bgcolor: "rgba(239,68,68,0.08)" } }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
+                        { (user?.role === "SUPER_ADMIN" || user?.role === "OWNER" || user?.role === "ADMIN") && (
+                          <>
+                            <Tooltip title={c.status === "Closed" || c.status === "Resolved" ? "Mark Active" : "Mark Inactive"}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleToggleComplaintStatus(c)}
+                                sx={{ color: c.status !== "Closed" && c.status !== "Resolved" ? "#2563EB" : "#94A3B8", "&:hover": { bgcolor: "rgba(37,99,235,0.08)" } }}
+                              >
+                                {c.status !== "Closed" && c.status !== "Resolved" ? <CustomEyeIcon sx={{ fontSize: 20 }} /> : <VisibilityOffIcon sx={{ fontSize: 20 }} />}
+                              </IconButton>
+                            </Tooltip>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDeleteComplaint(c.id)}
+                              sx={{ color: "#EF4444", "&:hover": { bgcolor: "rgba(239,68,68,0.08)" } }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </>
+                        )}
                       </Box>
                     </TableCell>
                   </TableRow>

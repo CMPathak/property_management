@@ -459,9 +459,6 @@ export default function Rent() {
               <Typography variant="h4" fontWeight={800} color="#0F172A" tracking="-0.02em" sx={{ fontSize: { xs: "1.5rem", sm: "1.85rem" } }}>
                 Rent & Payment Management
               </Typography>
-              <Typography variant="body2" color="#64748B" fontWeight={500} sx={{ mt: 0.5 }}>
-                Generate monthly rent ledgers, record tenant payments, and issue download receipts.
-              </Typography>
             </Box>
 
             <Button
@@ -577,9 +574,6 @@ export default function Rent() {
               <Box>
                 <Typography variant="h4" fontWeight={800} color="#0F172A" tracking="-0.02em" sx={{ fontSize: { xs: "1.5rem", sm: "1.85rem" } }}>
                   Rent Payment
-                </Typography>
-                <Typography variant="body2" color="#64748B" fontWeight={500} sx={{ mt: 0.5 }}>
-                  Pay your monthly hostel rent securely using UPI QR Code.
                 </Typography>
               </Box>
 

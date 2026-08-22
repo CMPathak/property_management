@@ -909,9 +909,7 @@ export default function Tenants() {
         <Typography variant="h4" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
           Tenants Management
         </Typography>
-        <Typography variant="body2" color="#64748B" fontWeight={500}>
-          Manage all tenants, occupancy, and tenant details.
-        </Typography>
+
       </Box>
 
       {/* 5 Stat Cards */}
@@ -1133,17 +1131,18 @@ export default function Tenants() {
           display: "flex",
           flexWrap: "nowrap",
           justifyContent: "space-between",
-          alignItems: "flex-end",
+          alignItems: "center",
           gap: 1.5,
           mb: 3,
-          p: 2,
+          p: 1.5,
+          px: 2,
           bgcolor: "#fff",
           borderRadius: "12px",
           border: "1px solid #E2E8F0",
           overflowX: "auto",
         }}
       >
-        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "nowrap", alignItems: "flex-end" }}>
+        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "nowrap", alignItems: "center" }}>
           {/* Search bar */}
           <TextField
             placeholder="Search tenant by name, phone, email..."
@@ -1170,9 +1169,6 @@ export default function Tenants() {
 
           {/* Select Property */}
           <FormControl size="small" sx={{ minWidth: "125px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>
-              Select Property
-            </Typography>
             <Select
               value={propertyFilter}
               onChange={(e) => {
@@ -1194,9 +1190,6 @@ export default function Tenants() {
 
           {/* Select Floor */}
           <FormControl size="small" sx={{ minWidth: "105px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>
-              Select Floor
-            </Typography>
             <Select
               value={floorFilter}
               onChange={(e) => {
@@ -1219,9 +1212,6 @@ export default function Tenants() {
 
           {/* Select Room */}
           <FormControl size="small" sx={{ minWidth: "105px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>
-              Select Room
-            </Typography>
             <Select
               value={roomFilter}
               onChange={(e) => setRoomFilter(e.target.value)}
@@ -1245,9 +1235,7 @@ export default function Tenants() {
 
           {/* Status */}
           <FormControl size="small" sx={{ minWidth: "105px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>
-              Status
-            </Typography>
+                
             <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}

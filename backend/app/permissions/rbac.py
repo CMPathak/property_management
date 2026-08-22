@@ -24,7 +24,7 @@ ROLE_PERMISSIONS: dict[UserRole, list[str]] = {
     UserRole.STAFF: [
         "property:read", "floor:read", "room:read", "bed:read", "tenant:read",
         "agreement:read",
-        "complaint:read", "complaint:update",
+        "complaint:create", "complaint:read", "complaint:update",
         "staff_attendance:create", "staff_attendance:read"
     ],
     UserRole.TENANT: [
@@ -78,9 +78,14 @@ class PermissionChecker:
         allowed_permissions = list(ROLE_PERMISSIONS.get(user_role, []))
 
         # Dynamically append designation-specific permissions for STAFF
-        if user_role == UserRole.STAFF and current_user.designation:
-            designation_perms = STAFF_DESIGNATION_PERMISSIONS.get(current_user.designation, [])
-            allowed_permissions.extend(designation_perms)
+        if user_role == UserRole.STAFF:
+            designation = None
+            if current_user.staff_profile and hasattr(current_user.staff_profile, 'designation'):
+                designation = current_user.staff_profile.designation
+                
+            if designation:
+                designation_perms = STAFF_DESIGNATION_PERMISSIONS.get(designation, [])
+                allowed_permissions.extend(designation_perms)
 
         # Super admin and owner have wildcard permissions
         if "*" in allowed_permissions:

@@ -81,10 +81,7 @@ export default function Notifications() {
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
         <Box>
           <Typography variant="h5" fontWeight={800} color="text.primary" tracking="-0.02em">
-            System Notifications & Alerts
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Stay updated with announcements, rent reminders, check-ins, and payment confirmations.
+            Notifications
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1.5 }}>
@@ -107,11 +104,11 @@ export default function Notifications() {
 
           const displayTime = n.created_at
             ? new Date(n.created_at).toLocaleString("en-IN", {
-                day: "numeric",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
             : "Recent";
 
           return (

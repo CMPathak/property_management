@@ -138,9 +138,6 @@ export default function Tasks() {
           <Typography variant="h5" fontWeight={800} color="text.primary" tracking="-0.02em">
             My Work Tasks
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            View assigned operational work, maintenance duties, housekeeping, and inspection checklists.
-          </Typography>
         </Box>
         <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => setOpenAddDialog(true)}>
           Create Task

@@ -89,7 +89,7 @@ export default function Staff() {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
-  const [newPassword, setNewPassword] = useState("user123");
+  const [newPassword, setNewPassword] = useState("");
   const [newRole, setNewRole] = useState("STAFF");
   const [newEmployeeId, setNewEmployeeId] = useState("");
   const [newDesignation, setNewDesignation] = useState("");
@@ -130,6 +130,8 @@ export default function Staff() {
   const [editTab, setEditTab] = useState(0);
   const [editIdProofFile, setEditIdProofFile] = useState(null);
   const [editResumeFile, setEditResumeFile] = useState(null);
+  const [editPassword, setEditPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // Filters & Pagination
   const [searchQuery, setSearchQuery] = useState("");
@@ -232,7 +234,7 @@ export default function Staff() {
       setNewName("");
       setNewEmail("");
       setNewPhone("");
-      setNewPassword("user123");
+      setNewPassword("");
       setNewEmployeeId("");
       setNewDepartment(departments[0] || "");
       setNewDesignation(departmentDesignations[departments[0]]?.[0] || "");
@@ -279,6 +281,7 @@ export default function Staff() {
     setEditEmploymentType(s.employment_type || "");
     setEditIdProofFile(null);
     setEditResumeFile(null);
+    setEditPassword("");
     setEditTab(0);
     setOpenEditDialog(true);
   };
@@ -303,6 +306,7 @@ export default function Staff() {
         dob: editDob || null,
         address: editAddress || null,
         employment_type: editEmploymentType || null,
+        ...(editPassword ? { password: editPassword } : {}),
       };
       await api.put(`/users/${staffToEdit.id}`, payload);
 
@@ -643,10 +647,7 @@ export default function Staff() {
     <Box sx={{ flexGrow: 1, pb: 6, minWidth: 0, maxWidth: "100%" }} className="fade-in">
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
-          Staff & Management Directory
-        </Typography>
-        <Typography variant="body2" color="#64748B">
-          Manage your staff members, departments and access roles.
+          Staff
         </Typography>
       </Box>
 
@@ -722,7 +723,12 @@ export default function Staff() {
       </Box>
 
       {/* Action Bar */}
-      <Box sx={{ display: "flex", flexDirection: "row", gap: 2, mb: 3, alignItems: "center", flexWrap: "nowrap", overflowX: "auto", pb: 1, width: "100%" }}>
+      <Box sx={{ 
+        display: "flex", flexDirection: "row", gap: 1.5, mb: 3, alignItems: "center", flexWrap: "nowrap", overflowX: "auto", p: 1.5, px: 2,
+        bgcolor: "#fff",
+        borderRadius: "12px",
+        border: "1px solid #E2E8F0"
+      }}>
         <TextField
           placeholder="Search staff by name, role, phone..."
           size="small"
@@ -995,7 +1001,25 @@ export default function Staff() {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Initial Password <span style={{ color: "#EF4444" }}>*</span></Typography>
-                <TextField fullWidth size="small" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }} />
+                <TextField 
+                  fullWidth 
+                  size="small" 
+                  type={showPassword ? "text" : "password"} 
+                  value={newPassword} 
+                  onChange={(e) => setNewPassword(e.target.value)} 
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }} 
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton size="small" onClick={() => setShowPassword(!showPassword)} onMouseDown={(e) => e.preventDefault()} edge="end">
+                            {showPassword ? <VisibilityOffIcon fontSize="small" /> : <ViewIcon fontSize="small" />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
               </Box>
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Account Role <span style={{ color: "#EF4444" }}>*</span></Typography>
@@ -1182,6 +1206,29 @@ export default function Staff() {
 
           {editTab === 1 && (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Change Password</Typography>
+                <TextField 
+                  fullWidth 
+                  size="small" 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="Leave empty to keep current" 
+                  value={editPassword} 
+                  onChange={(e) => setEditPassword(e.target.value)} 
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }} 
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton size="small" onClick={() => setShowPassword(!showPassword)} onMouseDown={(e) => e.preventDefault()} edge="end">
+                            {showPassword ? <VisibilityOffIcon fontSize="small" /> : <ViewIcon fontSize="small" />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
+              </Box>
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5, color: "#1E293B" }}>Account Role <span style={{ color: "#EF4444" }}>*</span></Typography>
                 <Select fullWidth size="small" displayEmpty value={editRole} onChange={(e) => setEditRole(e.target.value)} disabled={!canAssignRole} sx={{ borderRadius: "8px" }}>

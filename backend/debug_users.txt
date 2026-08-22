@@ -1,0 +1,248 @@
+--- GET /users/ ---
+DEBUG USER 799e0681-3330-41a5-9d34-503871a37bbc: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270257C50>
+  -> sp.employee_code=EMP-FBA1, dept=None
+  -> Serialized: employee_id=EMP-FBA1, department=Operations
+DEBUG USER 0e4e33e5-78c3-41ec-9900-460c2b3da813: sp=None
+  -> Serialized: employee_id=EMP-0E4E, department=Operations
+DEBUG USER 81946a3a-fada-4074-8b32-8f041d89db99: sp=None
+  -> Serialized: employee_id=EMP-8194, department=Operations
+DEBUG USER 3cc7b9ce-d208-40df-8d47-f5cd2cfa7108: sp=None
+  -> Serialized: employee_id=EMP-3CC7, department=Operations
+DEBUG USER fba5f34a-dabd-462d-860f-cc105dc650f5: sp=<app.modules.staff.model.StaffProfile object at 0x000001E26FA1A250>
+  -> sp.employee_code=EMP-FBA5, dept=Accounts & Finance
+  -> Serialized: employee_id=EMP-FBA5, department=Accounts & Finance
+DEBUG USER 0bcfa4b5-1c28-4b6b-9bc8-effcfebb86cf: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270394150>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-0BCF, department=Operations
+DEBUG USER 07ba1e18-ade5-426c-9210-bd26263d7f65: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270394B50>
+  -> sp.employee_code=EMP-FBA4, dept=Security
+  -> Serialized: employee_id=EMP-FBA4, department=Security
+DEBUG USER 2f11ae3e-ae68-47ff-8119-821e58135e2d: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270394350>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-2F11, department=Operations
+DEBUG USER 5eb05654-53bd-4c91-a16d-1e480e3f04ac: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270394A50>
+  -> sp.employee_code=EMP-5EB05654, dept=Administration
+  -> Serialized: employee_id=EMP-5EB05654, department=Administration
+DEBUG USER 52e4241e-71e5-4962-b46e-71dcf5762d50: sp=<app.modules.staff.model.StaffProfile object at 0x000001E26FEA3D50>
+  -> sp.employee_code=EMP-FBA3, dept=None
+  -> Serialized: employee_id=EMP-FBA3, department=Operations
+DEBUG USER 5745e963-e989-40d5-a7d5-6a831eeec8ab: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270257450>
+  -> sp.employee_code=EMP-FBA2, dept=Maintenance
+  -> Serialized: employee_id=EMP-FBA2, department=Maintenance
+--- GET /users/ ---
+DEBUG USER 799e0681-3330-41a5-9d34-503871a37bbc: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270257550>
+  -> sp.employee_code=EMP-FBA1, dept=None
+  -> Serialized: employee_id=EMP-FBA1, department=Operations
+DEBUG USER 0e4e33e5-78c3-41ec-9900-460c2b3da813: sp=None
+  -> Serialized: employee_id=EMP-0E4E, department=Operations
+DEBUG USER 81946a3a-fada-4074-8b32-8f041d89db99: sp=None
+  -> Serialized: employee_id=EMP-8194, department=Operations
+DEBUG USER 3cc7b9ce-d208-40df-8d47-f5cd2cfa7108: sp=None
+  -> Serialized: employee_id=EMP-3CC7, department=Operations
+DEBUG USER fba5f34a-dabd-462d-860f-cc105dc650f5: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270257650>
+  -> sp.employee_code=EMP-FBA5, dept=Accounts & Finance
+  -> Serialized: employee_id=EMP-FBA5, department=Accounts & Finance
+DEBUG USER 0bcfa4b5-1c28-4b6b-9bc8-effcfebb86cf: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270390050>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-0BCF, department=Operations
+DEBUG USER 07ba1e18-ade5-426c-9210-bd26263d7f65: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270390250>
+  -> sp.employee_code=EMP-FBA4, dept=Security
+  -> Serialized: employee_id=EMP-FBA4, department=Security
+DEBUG USER 2f11ae3e-ae68-47ff-8119-821e58135e2d: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270390150>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-2F11, department=Operations
+DEBUG USER 5eb05654-53bd-4c91-a16d-1e480e3f04ac: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270256E50>
+  -> sp.employee_code=EMP-5EB05654, dept=Administration
+  -> Serialized: employee_id=EMP-5EB05654, department=Administration
+DEBUG USER 52e4241e-71e5-4962-b46e-71dcf5762d50: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270255950>
+  -> sp.employee_code=EMP-FBA3, dept=None
+  -> Serialized: employee_id=EMP-FBA3, department=Operations
+DEBUG USER 5745e963-e989-40d5-a7d5-6a831eeec8ab: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270256650>
+  -> sp.employee_code=EMP-FBA2, dept=Maintenance
+  -> Serialized: employee_id=EMP-FBA2, department=Maintenance
+--- GET /users/ ---
+DEBUG USER 799e0681-3330-41a5-9d34-503871a37bbc: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270257250>
+  -> sp.employee_code=EMP-FBA1, dept=None
+  -> Serialized: employee_id=EMP-FBA1, department=Operations
+DEBUG USER 0e4e33e5-78c3-41ec-9900-460c2b3da813: sp=None
+  -> Serialized: employee_id=EMP-0E4E, department=Operations
+DEBUG USER 81946a3a-fada-4074-8b32-8f041d89db99: sp=None
+  -> Serialized: employee_id=EMP-8194, department=Operations
+DEBUG USER 3cc7b9ce-d208-40df-8d47-f5cd2cfa7108: sp=None
+  -> Serialized: employee_id=EMP-3CC7, department=Operations
+DEBUG USER fba5f34a-dabd-462d-860f-cc105dc650f5: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270255950>
+  -> sp.employee_code=EMP-FBA5, dept=Accounts & Finance
+  -> Serialized: employee_id=EMP-FBA5, department=Accounts & Finance
+DEBUG USER 0bcfa4b5-1c28-4b6b-9bc8-effcfebb86cf: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270485250>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-0BCF, department=Operations
+DEBUG USER 07ba1e18-ade5-426c-9210-bd26263d7f65: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270484F50>
+  -> sp.employee_code=EMP-FBA4, dept=Security
+  -> Serialized: employee_id=EMP-FBA4, department=Security
+DEBUG USER 2f11ae3e-ae68-47ff-8119-821e58135e2d: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270486350>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-2F11, department=Operations
+DEBUG USER 5eb05654-53bd-4c91-a16d-1e480e3f04ac: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270485750>
+  -> sp.employee_code=EMP-5EB05654, dept=Administration
+  -> Serialized: employee_id=EMP-5EB05654, department=Administration
+DEBUG USER 52e4241e-71e5-4962-b46e-71dcf5762d50: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270484350>
+  -> sp.employee_code=EMP-FBA3, dept=None
+  -> Serialized: employee_id=EMP-FBA3, department=Operations
+DEBUG USER 5745e963-e989-40d5-a7d5-6a831eeec8ab: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270257E50>
+  -> sp.employee_code=EMP-FBA2, dept=Maintenance
+  -> Serialized: employee_id=EMP-FBA2, department=Maintenance
+--- GET /users/ ---
+DEBUG USER 799e0681-3330-41a5-9d34-503871a37bbc: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270485E50>
+  -> sp.employee_code=EMP-FBA1, dept=None
+  -> Serialized: employee_id=EMP-FBA1, department=Operations
+DEBUG USER 0e4e33e5-78c3-41ec-9900-460c2b3da813: sp=None
+  -> Serialized: employee_id=EMP-0E4E, department=Operations
+DEBUG USER 81946a3a-fada-4074-8b32-8f041d89db99: sp=None
+  -> Serialized: employee_id=EMP-8194, department=Operations
+DEBUG USER 3cc7b9ce-d208-40df-8d47-f5cd2cfa7108: sp=None
+  -> Serialized: employee_id=EMP-3CC7, department=Operations
+DEBUG USER fba5f34a-dabd-462d-860f-cc105dc650f5: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270486F50>
+  -> sp.employee_code=EMP-FBA5, dept=Accounts & Finance
+  -> Serialized: employee_id=EMP-FBA5, department=Accounts & Finance
+DEBUG USER 0bcfa4b5-1c28-4b6b-9bc8-effcfebb86cf: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270485750>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-0BCF, department=Operations
+DEBUG USER 07ba1e18-ade5-426c-9210-bd26263d7f65: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270486350>
+  -> sp.employee_code=EMP-FBA4, dept=Security
+  -> Serialized: employee_id=EMP-FBA4, department=Security
+DEBUG USER 2f11ae3e-ae68-47ff-8119-821e58135e2d: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270484350>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-2F11, department=Operations
+DEBUG USER 5eb05654-53bd-4c91-a16d-1e480e3f04ac: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270484F50>
+  -> sp.employee_code=EMP-5EB05654, dept=Administration
+  -> Serialized: employee_id=EMP-5EB05654, department=Administration
+DEBUG USER 52e4241e-71e5-4962-b46e-71dcf5762d50: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270485250>
+  -> sp.employee_code=EMP-FBA3, dept=None
+  -> Serialized: employee_id=EMP-FBA3, department=Operations
+DEBUG USER 5745e963-e989-40d5-a7d5-6a831eeec8ab: sp=<app.modules.staff.model.StaffProfile object at 0x000001E270486950>
+  -> sp.employee_code=EMP-FBA2, dept=Maintenance
+  -> Serialized: employee_id=EMP-FBA2, department=Maintenance
+--- GET /users/ ---
+DEBUG USER 799e0681-3330-41a5-9d34-503871a37bbc: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB92850>
+  -> sp.employee_code=EMP-FBA1, dept=None
+  -> Serialized: employee_id=EMP-FBA1, department=Operations
+DEBUG USER 0e4e33e5-78c3-41ec-9900-460c2b3da813: sp=None
+  -> Serialized: employee_id=EMP-0E4E, department=Operations
+DEBUG USER 81946a3a-fada-4074-8b32-8f041d89db99: sp=None
+  -> Serialized: employee_id=EMP-8194, department=Operations
+DEBUG USER 3cc7b9ce-d208-40df-8d47-f5cd2cfa7108: sp=None
+  -> Serialized: employee_id=EMP-3CC7, department=Operations
+DEBUG USER fba5f34a-dabd-462d-860f-cc105dc650f5: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB91A50>
+  -> sp.employee_code=EMP-FBA5, dept=Accounts & Finance
+  -> Serialized: employee_id=EMP-FBA5, department=Accounts & Finance
+DEBUG USER 0bcfa4b5-1c28-4b6b-9bc8-effcfebb86cf: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB91550>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-0BCF, department=Operations
+DEBUG USER 07ba1e18-ade5-426c-9210-bd26263d7f65: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB93550>
+  -> sp.employee_code=EMP-FBA4, dept=Security
+  -> Serialized: employee_id=EMP-FBA4, department=Security
+DEBUG USER 2f11ae3e-ae68-47ff-8119-821e58135e2d: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB93450>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-2F11, department=Operations
+DEBUG USER 5eb05654-53bd-4c91-a16d-1e480e3f04ac: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB92D50>
+  -> sp.employee_code=EMP-5EB05654, dept=Administration
+  -> Serialized: employee_id=EMP-5EB05654, department=Administration
+DEBUG USER 52e4241e-71e5-4962-b46e-71dcf5762d50: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB93750>
+  -> sp.employee_code=EMP-FBA3, dept=None
+  -> Serialized: employee_id=EMP-FBA3, department=Operations
+DEBUG USER 5745e963-e989-40d5-a7d5-6a831eeec8ab: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB91150>
+  -> sp.employee_code=EMP-FBA2, dept=Maintenance
+  -> Serialized: employee_id=EMP-FBA2, department=Maintenance
+--- GET /users/ ---
+DEBUG USER 799e0681-3330-41a5-9d34-503871a37bbc: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB90950>
+  -> sp.employee_code=EMP-FBA1, dept=None
+  -> Serialized: employee_id=EMP-FBA1, department=Operations
+DEBUG USER 0e4e33e5-78c3-41ec-9900-460c2b3da813: sp=None
+  -> Serialized: employee_id=EMP-0E4E, department=Operations
+DEBUG USER 81946a3a-fada-4074-8b32-8f041d89db99: sp=None
+  -> Serialized: employee_id=EMP-8194, department=Operations
+DEBUG USER 3cc7b9ce-d208-40df-8d47-f5cd2cfa7108: sp=None
+  -> Serialized: employee_id=EMP-3CC7, department=Operations
+DEBUG USER fba5f34a-dabd-462d-860f-cc105dc650f5: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB93450>
+  -> sp.employee_code=EMP-FBA5, dept=Accounts & Finance
+  -> Serialized: employee_id=EMP-FBA5, department=Accounts & Finance
+DEBUG USER 0bcfa4b5-1c28-4b6b-9bc8-effcfebb86cf: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB91A50>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-0BCF, department=Operations
+DEBUG USER 07ba1e18-ade5-426c-9210-bd26263d7f65: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB92650>
+  -> sp.employee_code=EMP-FBA4, dept=Security
+  -> Serialized: employee_id=EMP-FBA4, department=Security
+DEBUG USER 2f11ae3e-ae68-47ff-8119-821e58135e2d: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB93950>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-2F11, department=Operations
+DEBUG USER 5eb05654-53bd-4c91-a16d-1e480e3f04ac: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB92D50>
+  -> sp.employee_code=EMP-5EB05654, dept=Administration
+  -> Serialized: employee_id=EMP-5EB05654, department=Administration
+DEBUG USER 52e4241e-71e5-4962-b46e-71dcf5762d50: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FACEA50>
+  -> sp.employee_code=EMP-FBA3, dept=None
+  -> Serialized: employee_id=EMP-FBA3, department=Operations
+DEBUG USER 5745e963-e989-40d5-a7d5-6a831eeec8ab: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB93750>
+  -> sp.employee_code=EMP-FBA2, dept=Maintenance
+  -> Serialized: employee_id=EMP-FBA2, department=Maintenance
+--- GET /users/ ---
+DEBUG USER 799e0681-3330-41a5-9d34-503871a37bbc: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97350>
+  -> sp.employee_code=EMP-FBA1, dept=None
+  -> Serialized: employee_id=EMP-FBA1, department=Operations
+DEBUG USER 0e4e33e5-78c3-41ec-9900-460c2b3da813: sp=None
+  -> Serialized: employee_id=EMP-0E4E, department=Operations
+DEBUG USER 81946a3a-fada-4074-8b32-8f041d89db99: sp=None
+  -> Serialized: employee_id=EMP-8194, department=Operations
+DEBUG USER 3cc7b9ce-d208-40df-8d47-f5cd2cfa7108: sp=None
+  -> Serialized: employee_id=EMP-3CC7, department=Operations
+DEBUG USER fba5f34a-dabd-462d-860f-cc105dc650f5: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB91950>
+  -> sp.employee_code=EMP-FBA5, dept=Accounts & Finance
+  -> Serialized: employee_id=EMP-FBA5, department=Accounts & Finance
+DEBUG USER 0bcfa4b5-1c28-4b6b-9bc8-effcfebb86cf: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97750>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-0BCF, department=Operations
+DEBUG USER 07ba1e18-ade5-426c-9210-bd26263d7f65: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97650>
+  -> sp.employee_code=EMP-FBA4, dept=Security
+  -> Serialized: employee_id=EMP-FBA4, department=Security
+DEBUG USER 2f11ae3e-ae68-47ff-8119-821e58135e2d: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97850>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-2F11, department=Operations
+DEBUG USER 5eb05654-53bd-4c91-a16d-1e480e3f04ac: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97550>
+  -> sp.employee_code=EMP-5EB05654, dept=Administration
+  -> Serialized: employee_id=EMP-5EB05654, department=Administration
+DEBUG USER 52e4241e-71e5-4962-b46e-71dcf5762d50: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FACEA50>
+  -> sp.employee_code=EMP-FBA3, dept=None
+  -> Serialized: employee_id=EMP-FBA3, department=Operations
+DEBUG USER 5745e963-e989-40d5-a7d5-6a831eeec8ab: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97450>
+  -> sp.employee_code=EMP-FBA2, dept=Maintenance
+  -> Serialized: employee_id=EMP-FBA2, department=Maintenance
+--- GET /users/ ---
+DEBUG USER 799e0681-3330-41a5-9d34-503871a37bbc: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97650>
+  -> sp.employee_code=EMP-FBA1, dept=None
+  -> Serialized: employee_id=EMP-FBA1, department=Operations
+DEBUG USER 0e4e33e5-78c3-41ec-9900-460c2b3da813: sp=None
+  -> Serialized: employee_id=EMP-0E4E, department=Operations
+DEBUG USER 81946a3a-fada-4074-8b32-8f041d89db99: sp=None
+  -> Serialized: employee_id=EMP-8194, department=Operations
+DEBUG USER 3cc7b9ce-d208-40df-8d47-f5cd2cfa7108: sp=None
+  -> Serialized: employee_id=EMP-3CC7, department=Operations
+DEBUG USER fba5f34a-dabd-462d-860f-cc105dc650f5: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FB91950>
+  -> sp.employee_code=EMP-FBA5, dept=Accounts & Finance
+  -> Serialized: employee_id=EMP-FBA5, department=Accounts & Finance
+DEBUG USER 0bcfa4b5-1c28-4b6b-9bc8-effcfebb86cf: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97850>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-0BCF, department=Operations
+DEBUG USER 07ba1e18-ade5-426c-9210-bd26263d7f65: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC95650>
+  -> sp.employee_code=EMP-FBA4, dept=Security
+  -> Serialized: employee_id=EMP-FBA4, department=Security
+DEBUG USER 2f11ae3e-ae68-47ff-8119-821e58135e2d: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97550>
+  -> sp.employee_code=None, dept=None
+  -> Serialized: employee_id=EMP-2F11, department=Operations
+DEBUG USER 5eb05654-53bd-4c91-a16d-1e480e3f04ac: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC94D50>
+  -> sp.employee_code=EMP-5EB05654, dept=Administration
+  -> Serialized: employee_id=EMP-5EB05654, department=Administration
+DEBUG USER 52e4241e-71e5-4962-b46e-71dcf5762d50: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC97350>
+  -> sp.employee_code=EMP-FBA3, dept=None
+  -> Serialized: employee_id=EMP-FBA3, department=Operations
+DEBUG USER 5745e963-e989-40d5-a7d5-6a831eeec8ab: sp=<app.modules.staff.model.StaffProfile object at 0x000002984FC96E50>
+  -> sp.employee_code=EMP-FBA2, dept=Maintenance
+  -> Serialized: employee_id=EMP-FBA2, department=Maintenance
