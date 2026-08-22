@@ -150,9 +150,6 @@ export default function Payments() {
           <Typography variant="h5" fontWeight={800} color="text.primary" tracking="-0.02em">
             Payment History & Receipts
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            View completed rent transactions, transaction reference IDs, payment methods, and download payment receipts.
-          </Typography>
         </Box>
       </Box>
 

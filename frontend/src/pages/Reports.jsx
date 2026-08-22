@@ -66,11 +66,11 @@ export default function Reports() {
       for (let i = 5; i >= 0; i--) {
         const mIdx = (currentMonthIdx - i + 12) % 12;
         const monthLabel = months[mIdx];
-        
+
         // Month specific aggregation
         let mRev = Math.round(calcRevenue * (0.8 + (mIdx % 4) * 0.1));
         let mExp = Math.round(calcExpenses * (0.7 + (mIdx % 3) * 0.15));
-        
+
         dynamicChart.push({
           date: monthLabel,
           Revenue: mRev,
@@ -155,10 +155,7 @@ export default function Reports() {
       <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 2, mb: 3 }}>
         <Box>
           <Typography variant="h5" fontWeight={800} color="text.primary" tracking="-0.02em">
-            Financial & Analytics Reports
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Live database analytics: Property revenues, operating expenses, and net yield metrics.
+            Reports
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1.5, width: { xs: "100%", sm: "auto" } }}>

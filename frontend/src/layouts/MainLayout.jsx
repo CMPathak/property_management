@@ -576,7 +576,7 @@ export default function MainLayout({ toggleTheme, mode }) {
   );
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default", width: "100%" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: mode === "dark" ? "background.default" : "#FFFFFF", width: "100%" }}>
       {/* Top Header */}
       <AppBar
         position="fixed"
@@ -848,6 +848,13 @@ export default function MainLayout({ toggleTheme, mode }) {
         </Breadcrumbs>
 
         <Outlet />
+
+        {/* Global Footer */}
+        <Box sx={{ mt: "auto", pt: 4, pb: 1, textAlign: "center" }}>
+          <Typography variant="caption" color="text.secondary" fontWeight={500}>
+            Powered by HubTech Media Solutions
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );

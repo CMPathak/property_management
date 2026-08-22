@@ -16,7 +16,7 @@ export const lightTheme = createTheme({
       contrastText: "#FFFFFF",
     },
     background: {
-      default: "#F8FAFC", // Clean light SaaS background
+      default: "#FFFFFF", // Clean light SaaS background
       paper: "#FFFFFF",   // White cards
     },
     text: {

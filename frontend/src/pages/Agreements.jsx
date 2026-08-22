@@ -202,12 +202,7 @@ export default function Agreements() {
       <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "stretch", sm: "center" }, gap: 2, mb: 3 }}>
         <Box>
           <Typography variant="h5" fontWeight={800} color="text.primary" tracking="-0.02em">
-            Lease Agreements
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {user?.role === "TENANT"
-              ? "View your active rental contract, start date, security deposit rules, and terms."
-              : "Manage tenant rental contracts, check-in terms, deposit rules, and active leases."}
+          Agreements
           </Typography>
         </Box>
         {user?.role !== "TENANT" && (

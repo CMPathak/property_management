@@ -67,10 +67,11 @@ class CRUDUser(BaseRepository[User, UserCreate, UserUpdate]):
             if obj_in.shift_timing == "NIGHT":
                 shift_val = ShiftType.NIGHT
             
+            emp_code = obj_in.employee_id if hasattr(obj_in, "employee_id") and obj_in.employee_id else f"EMP-{str(db_obj.id).split('-')[0].upper()}"
             staff_profile = StaffProfile(
                 user_id=db_obj.id,
                 shift=shift_val,
-                employee_code=obj_in.employee_id,
+                employee_code=emp_code,
                 designation=obj_in.designation,
                 department=obj_in.department,
                 blood_group=obj_in.blood_group,
@@ -128,10 +129,11 @@ class CRUDUser(BaseRepository[User, UserCreate, UserUpdate]):
                 shift_val = ShiftType.EVENING
                 
             if not staff_profile:
+                emp_code = update_data.get("employee_id") if update_data.get("employee_id") else f"EMP-{str(db_obj.id).split('-')[0].upper()}"
                 staff_profile = StaffProfile(
                     user_id=db_obj.id,
                     shift=shift_val,
-                    employee_code=update_data.get("employee_id"),
+                    employee_code=emp_code,
                     designation=update_data.get("designation"),
                     department=update_data.get("department"),
                     blood_group=update_data.get("blood_group"),
@@ -143,7 +145,7 @@ class CRUDUser(BaseRepository[User, UserCreate, UserUpdate]):
                 if "shift_timing" in update_data:
                     staff_profile.shift = shift_val
                 if "employee_id" in update_data:
-                    staff_profile.employee_code = update_data["employee_id"]
+                    staff_profile.employee_code = update_data["employee_id"] if update_data["employee_id"] else f"EMP-{str(db_obj.id).split('-')[0].upper()}"
                 if "designation" in update_data:
                     staff_profile.designation = update_data["designation"]
                 if "department" in update_data:

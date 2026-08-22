@@ -42,12 +42,12 @@ import CustomEditIcon from "../components/common/CustomEditIcon";
 import CustomEyeIcon from "../components/common/CustomEyeIcon";
 
 const INDIAN_STATES = [
-  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", 
-  "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", 
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", 
-  "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", 
-  "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", 
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", 
+  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
+  "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand",
+  "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra",
+  "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab",
+  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh",
   "Uttarakhand", "West Bengal"
 ];
 
@@ -105,11 +105,11 @@ export default function Properties() {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  
+
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openViewDialog, setOpenViewDialog] = useState(false);
-  
+
   const [propertyToEdit, setPropertyToEdit] = useState(null);
   const [propertyToView, setPropertyToView] = useState(null);
 
@@ -342,7 +342,7 @@ export default function Properties() {
       <Box>
         <CustomLabel required>State</CustomLabel>
         <CustomSelect value={formData.state || ""} onChange={(e) => handleFormChange("state", e.target.value)}>
-          <MenuItem value="" disabled><span style={{color: "#94A3B8"}}>Select state</span></MenuItem>
+          <MenuItem value="" disabled><span style={{ color: "#94A3B8" }}>Select state</span></MenuItem>
           {INDIAN_STATES.map((state) => (
             <MenuItem key={state} value={state}>{state}</MenuItem>
           ))}
@@ -351,7 +351,7 @@ export default function Properties() {
       <Box>
         <CustomLabel required>Country</CustomLabel>
         <CustomSelect value={formData.country || ""} onChange={(e) => handleFormChange("country", e.target.value)}>
-          <MenuItem value="" disabled><span style={{color: "#94A3B8"}}>Select country</span></MenuItem>
+          <MenuItem value="" disabled><span style={{ color: "#94A3B8" }}>Select country</span></MenuItem>
           <MenuItem value="India">India</MenuItem>
         </CustomSelect>
       </Box>
@@ -372,7 +372,7 @@ export default function Properties() {
       <Box>
         <CustomLabel required>Property Type</CustomLabel>
         <CustomSelect value={formData.property_type || ""} onChange={(e) => handleFormChange("property_type", e.target.value)}>
-          <MenuItem value="" disabled><span style={{color: "#94A3B8"}}>Select property type</span></MenuItem>
+          <MenuItem value="" disabled><span style={{ color: "#94A3B8" }}>Select property type</span></MenuItem>
           <MenuItem value="Hostel">Hostel</MenuItem>
           <MenuItem value="PG">PG</MenuItem>
           <MenuItem value="Apartment">Apartment</MenuItem>
@@ -395,50 +395,42 @@ export default function Properties() {
 
   return (
     <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, bgcolor: "#FAFBFC", minHeight: "100vh" }}>
-      
+
       {/* Header Area */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mb: 0.5 }}>
-          Home &gt; <span style={{ color: "#0F172A", fontWeight: 600 }}>Properties</span>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
+          Properties
         </Typography>
-        
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-          <Box>
-            <Typography variant="h4" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
-              Properties
-            </Typography>
-            <Typography variant="body2" color="#64748B">
-              Manage all your properties in one place
-            </Typography>
-          </Box>
-          
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            <TextField
-              placeholder="Search properties..."
-              size="small"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" sx={{ color: "#94A3B8" }} />
-                    </InputAdornment>
-                  ),
-                  sx: { bgcolor: "#fff", borderRadius: "8px", width: "240px", "& fieldset": { borderColor: "#E2E8F0" } }
-                }
-              }}
-            />
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => { resetForm(); setOpenAddDialog(true); }}
-              sx={{ bgcolor: "#2563EB", textTransform: "none", borderRadius: "8px", px: 3, fontWeight: 600, boxShadow: "none", "&:hover": { bgcolor: "#1D4ED8", boxShadow: "none" } }}
-            >
-              Add Property
-            </Button>
-          </Box>
+      </Box>
+
+      {/* Filter Bar */}
+      <Box sx={{ display: "flex", flexWrap: "nowrap", justifyContent: "space-between", alignItems: "center", mb: 4, gap: 1.5, p: 1.5, px: 2, bgcolor: "#fff", borderRadius: "12px", border: "1px solid #E2E8F0", overflowX: "auto" }}>
+        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "nowrap", alignItems: "center" }}>
+          <TextField
+            placeholder="Search properties..."
+            size="small"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" sx={{ color: "#94A3B8" }} />
+                  </InputAdornment>
+                ),
+                sx: { bgcolor: "#FAFBFC", borderRadius: "8px", width: "240px", "& fieldset": { borderColor: "#E2E8F0" }, fontSize: "0.875rem" }
+              }
+            }}
+          />
         </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => { resetForm(); setOpenAddDialog(true); }}
+          sx={{ height: "40px", flexShrink: 0, bgcolor: "#2563EB", textTransform: "none", borderRadius: "8px", px: 2.5, fontWeight: 600, boxShadow: "none", "&:hover": { bgcolor: "#1D4ED8", boxShadow: "none" } }}
+        >
+          Add Property
+        </Button>
       </Box>
 
       {/* Stats Cards */}
@@ -609,7 +601,7 @@ export default function Properties() {
           rowsPerPageOptions={[5, 10, 25, 50]}
           onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
           labelRowsPerPage=""
-          sx={{ 
+          sx={{
             ".MuiTablePagination-toolbar": { minHeight: "auto", p: 0 },
             ".MuiTablePagination-actions": { ml: 1 }
           }}
@@ -661,7 +653,7 @@ export default function Properties() {
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       {/* View Dialog */}
       <Dialog open={openViewDialog} onClose={() => setOpenViewDialog(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: "16px" } }}>
         <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 3, pb: 2 }}>

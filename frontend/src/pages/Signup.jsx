@@ -20,6 +20,7 @@ import { Business as BusinessIcon, Google as GoogleIcon, Apple as AppleIcon, Vis
 import api from "../services/api";
 import { toast } from "react-toastify";
 import logoImg from "../assets/logo/accomax.png";
+import heroImg from "../assets/hero_property_banner.png";
 export default function Signup() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -235,7 +236,7 @@ export default function Signup() {
         <Box sx={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 520 }}>
           <Box
             component="img"
-            src="/hero_property_banner.png"
+            src={heroImg}
             alt="Modern Property Management Portal"
             sx={{
               width: "100%",

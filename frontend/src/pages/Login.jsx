@@ -19,6 +19,7 @@ import { Business as BusinessIcon, Google as GoogleIcon, Apple as AppleIcon, Vis
 import { setCredentials } from "../redux/authSlice";
 import api from "../services/api";
 import logoImg from "../assets/logo/accomax.png";
+import heroImg from "../assets/hero_property_banner.png";
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -234,7 +235,7 @@ export default function Login() {
         <Box sx={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 520 }}>
           <Box
             component="img"
-            src="/hero_property_banner.png"
+            src={heroImg}
             alt="Modern Property Management Portal"
             sx={{
               width: "100%",

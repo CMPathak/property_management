@@ -253,7 +253,7 @@ export default function Floors() {
           </Typography>
         </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "nowrap", gap: 2, overflowX: "auto" }}>
+        <Box sx={{ display: "flex", flexWrap: "nowrap", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 1.5, p: 1.5, px: 2, bgcolor: "#fff", borderRadius: "12px", border: "1px solid #E2E8F0", overflowX: "auto" }}>
           {/* Property Selector */}
           <Box sx={{ flexShrink: 0 }}>
             <FormControl size="small">

@@ -271,10 +271,7 @@ export default function Rooms() {
       <Box sx={{ flexGrow: 1 }} className="fade-in">
         <Box sx={{ mb: 3 }}>
           <Typography variant="h5" fontWeight={800} color="text.primary" tracking="-0.02em">
-            My Room & Accommodation Details
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Live database record of your property, room number, bed allocation, check-in, deposit, and amenities.
+            My Room
           </Typography>
         </Box>
 
@@ -646,7 +643,7 @@ export default function Rooms() {
 
 
       {/* Filters and Search Bar */}
-      <Box sx={{ display: "flex", flexWrap: "nowrap", justifyContent: "space-between", alignItems: "flex-end", mb: 3, gap: 1.5, p: 2, bgcolor: "#fff", borderRadius: "12px", border: "1px solid #E2E8F0", overflowX: "auto" }}>
+      <Box sx={{ display: "flex", flexWrap: "nowrap", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 1.5, p: 1.5, px: 2, bgcolor: "#fff", borderRadius: "12px", border: "1px solid #E2E8F0", overflowX: "auto" }}>
         <Box sx={{ display: "flex", gap: 1.5, flexWrap: "nowrap", alignItems: "flex-end" }}>
           <TextField
             placeholder="Search room number..."
@@ -666,7 +663,6 @@ export default function Rooms() {
           />
 
           <FormControl size="small" sx={{ minWidth: "130px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>Select Property</Typography>
             <Select
               value={propertyFilter}
               onChange={(e) => setPropertyFilter(e.target.value)}
@@ -681,7 +677,6 @@ export default function Rooms() {
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: "110px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>Select Floor</Typography>
             <Select
               value={floorFilter}
               onChange={(e) => setFloorFilter(e.target.value)}
@@ -696,7 +691,6 @@ export default function Rooms() {
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: "110px" }}>
-            <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ mb: 0.5 }}>Room Status</Typography>
             <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -862,7 +856,7 @@ export default function Rooms() {
           rowsPerPageOptions={[5, 10, 25, 50]}
           onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
           labelRowsPerPage=""
-          sx={{ 
+          sx={{
             ".MuiTablePagination-toolbar": { minHeight: "auto", p: 0 },
             ".MuiTablePagination-actions": { ml: 1 }
           }}

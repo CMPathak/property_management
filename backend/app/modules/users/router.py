@@ -59,13 +59,26 @@ async def list_users(
             detail="Not authorized to view users roster."
         )
 
-    statement = select(User).where(User.deleted_at.is_(None))
+    from sqlalchemy.orm import selectinload
+    statement = select(User).where(User.deleted_at.is_(None)).options(selectinload(User.staff_profile))
     if role:
         statement = statement.where(User.role == role)
     
     statement = statement.offset(skip).limit(limit)
     result = await db.execute(statement)
-    return list(result.scalars().all())
+    users = list(result.scalars().all())
+    with open("debug_users.txt", "a") as f:
+        f.write("--- GET /users/ ---\n")
+        for u in users:
+            f.write(f"DEBUG USER {u.id}: sp={u.staff_profile}\n")
+            if u.staff_profile:
+                f.write(f"  -> sp.employee_code={u.staff_profile.employee_code}, dept={u.staff_profile.department}\n")
+            try:
+                ur = UserResponse.model_validate(u)
+                f.write(f"  -> Serialized: employee_id={ur.employee_id}, department={ur.department}\n")
+            except Exception as e:
+                f.write(f"  -> Serialization error: {e}\n")
+    return users
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
